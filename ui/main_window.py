@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import tkinter.messagebox as messagebox
+
 import customtkinter as ctk
 
 from core.models import ColorProfile
 from ui.app_context import LuminaAppContext
+from ui.brand_assets import ico_path, load_header_ctk_image
+from ui.layout import center_on_screen, compute_window_sizes, set_window_size_keep_position
+from ui.pairing_dialog import PairingDialog
 from ui.process_picker import ProcessPickerDialog
 from ui.theme import (
     ACCENT,
@@ -13,11 +18,8 @@ from ui.theme import (
     BG_CARD,
     BG_CARD_HOVER,
     BG_DARK,
-    BG_INPUT,
     DANGER,
-    FONT_BODY,
     FONT_SMALL,
-    FONT_TITLE,
     SUCCESS,
     TEXT_MUTED,
     TEXT_PRIMARY,
@@ -25,6 +27,7 @@ from ui.theme import (
 )
 from ui.tray import TrayController
 from ui.util import Debouncer
+from ui.modal_utils import release_all_modal_grabs
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -41,13 +44,18 @@ class LuminaSyncWindow(ctk.CTk):
         self._quitting = False
         self._visible = not start_hidden
 
-        self.title("LuminaSync")
-        self._size_compact = (520, 380)
-        self._size_expanded = (520, 560)
+        sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
+        self._size_compact, self._size_expanded = compute_window_sizes(sw, sh)
         self._expanded = False
-        self.geometry(f"{self._size_compact[0]}x{self._size_compact[1]}")
-        self.minsize(480, 360)
+
+        self.title("LuminaSync")
         self.configure(fg_color=BG_DARK)
+        cw, ch = self._size_compact
+        ew, eh = self._size_expanded
+        self.resizable(False, False)
+        self.minsize(cw, ch)
+        self.maxsize(ew, eh)
+        self._apply_window_icon()
 
         self._build_header()
         self._build_settings()
@@ -69,6 +77,19 @@ class LuminaSyncWindow(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self._on_close_attempt)
         self.bind("<Unmap>", self._on_unmap)
 
+        self.after(50, self._finish_window_setup, start_hidden)
+
+    def _apply_window_icon(self) -> None:
+        path = ico_path()
+        if path:
+            try:
+                self.iconbitmap(default=str(path))
+            except Exception:
+                pass
+
+    def _finish_window_setup(self, start_hidden: bool) -> None:
+        w, h = self._size_compact
+        center_on_screen(self, w, h)
         if start_hidden:
             self.withdraw()
         else:
@@ -78,18 +99,16 @@ class LuminaSyncWindow(ctk.CTk):
         header = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=0, height=44)
         header.pack(fill="x")
         header.pack_propagate(False)
+
+        logo = load_header_ctk_image((28, 28))
+        if logo:
+            ctk.CTkLabel(header, image=logo, text="").pack(side="left", padx=(12, 4), pady=8)
         ctk.CTkLabel(
             header,
             text="LuminaSync",
             font=("Segoe UI", 16, "bold"),
             text_color=ACCENT,
-        ).pack(side="left", padx=12, pady=8)
-        ctk.CTkLabel(
-            header,
-            text="◆",
-            font=("Segoe UI", 14),
-            text_color=ACCENT_SECONDARY,
-        ).pack(side="right", padx=12)
+        ).pack(side="left", padx=(0, 8), pady=8)
 
     def _build_settings(self) -> None:
         box = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=10)
@@ -124,6 +143,18 @@ class LuminaSyncWindow(ctk.CTk):
         self._chk_autostart.pack(side="left")
         if s.autostart or self._ctx.sync_autostart_checkbox():
             self._chk_autostart.select()
+
+        ctk.CTkButton(
+            row,
+            text="Pair Mobile",
+            width=88,
+            height=24,
+            font=FONT_SMALL,
+            fg_color=ACCENT_SECONDARY,
+            hover_color=ACCENT,
+            text_color="white",
+            command=self._on_pair_mobile,
+        ).pack(side="right")
 
         row2 = ctk.CTkFrame(box, fg_color="transparent")
         row2.pack(fill="x", padx=8, pady=(0, 8))
@@ -180,13 +211,9 @@ class LuminaSyncWindow(ctk.CTk):
                 command=cmd,
             ).pack(side="right", padx=2)
 
-        self._programs_scroll = ctk.CTkScrollableFrame(
-            box,
-            fg_color=BG_DARK,
-            height=72,
-            orientation="horizontal",
-        )
-        self._programs_scroll.pack(fill="x", padx=6, pady=(0, 6))
+        self._programs_frame = ctk.CTkFrame(box, fg_color=BG_DARK, height=72)
+        self._programs_frame.pack(fill="x", padx=6, pady=(0, 6))
+        self._programs_frame.pack_propagate(True)
 
     def _build_profile_editor(self) -> None:
         self._profile_box = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=10)
@@ -202,6 +229,18 @@ class LuminaSyncWindow(ctk.CTk):
             text_color=ACCENT,
         )
         self._profile_title.pack(side="left")
+        self._btn_reset = ctk.CTkButton(
+            title_row,
+            text="Reset",
+            width=56,
+            height=22,
+            font=FONT_SMALL,
+            fg_color=BG_CARD_HOVER,
+            hover_color=DANGER,
+            text_color=TEXT_PRIMARY,
+            command=self._on_reset_profile,
+        )
+        self._btn_reset.pack(side="right")
 
         specs = [
             ("vibrance", "Vib", 0, 100, 100),
@@ -242,57 +281,68 @@ class LuminaSyncWindow(ctk.CTk):
         self._status_bar = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=0, height=28)
         self._status_bar.pack(fill="x", side="bottom")
         self._status_bar.pack_propagate(False)
-        bar = self._status_bar
         self._status_label = ctk.CTkLabel(
-            bar,
+            self._status_bar,
             text="",
             font=FONT_SMALL,
             text_color=TEXT_MUTED,
         )
         self._status_label.pack(side="left", padx=10)
-        self._engine_label = ctk.CTkLabel(bar, text="", font=FONT_SMALL)
+        self._engine_label = ctk.CTkLabel(self._status_bar, text="", font=FONT_SMALL)
         self._engine_label.pack(side="right", padx=10)
 
+    def _profile_panel_visible(self) -> bool:
+        try:
+            return bool(self._profile_box.winfo_ismapped())
+        except tk.TclError:
+            return False
+
     def _hide_profile_panel(self) -> None:
-        self._profile_box.pack_forget()
-        self._set_window_expanded(False)
+        if self._profile_panel_visible():
+            self._profile_box.pack_forget()
+        if self._expanded:
+            self._set_window_expanded(False)
 
     def _show_profile_panel(self, exe: str) -> None:
-        self._profile_box.pack(fill="x", padx=10, pady=(4, 6), before=self._status_bar)
-        self._profile_inner.pack(fill="x", padx=4, pady=4)
-        self._sliders_container.pack(fill="x", padx=4, pady=(0, 8))
+        need_resize = not self._expanded
+        if not self._profile_panel_visible():
+            self._profile_box.pack(fill="x", padx=10, pady=(4, 6), before=self._status_bar)
+            self._profile_inner.pack(fill="x", padx=4, pady=4)
+            self._sliders_container.pack(fill="x", padx=4, pady=(0, 8))
         self._profile_title.configure(text=exe)
-        self._set_window_expanded(True)
+        if need_resize:
+            self._set_window_expanded(True)
 
     def _set_window_expanded(self, expanded: bool) -> None:
         if expanded == self._expanded:
             return
         self._expanded = expanded
         w, h = self._size_expanded if expanded else self._size_compact
-        self.minsize(480, 500 if expanded else 360)
-        self.geometry(f"{w}x{h}")
-        self.update_idletasks()
+        set_window_size_keep_position(self, w, h)
 
     def _refresh_program_grid(self) -> None:
-        for w in self._programs_scroll.winfo_children():
+        for w in self._programs_frame.winfo_children():
             w.destroy()
         self._program_buttons.clear()
 
         exes = self._ctx.profiles.list_executables()
         if not exes:
             ctk.CTkLabel(
-                self._programs_scroll,
+                self._programs_frame,
                 text="(empty)",
                 font=FONT_SMALL,
                 text_color=TEXT_MUTED,
-            ).pack(padx=8, pady=4)
+            ).pack(padx=8, pady=8)
             return
+
+        inner = ctk.CTkFrame(self._programs_frame, fg_color="transparent")
+        inner.pack(fill="x", anchor="w")
 
         for exe in exes:
             short = exe.replace(".exe", "")[:10]
             sel = exe == self._selected_exe
             btn = ctk.CTkButton(
-                self._programs_scroll,
+                inner,
                 text=short,
                 width=72,
                 height=26,
@@ -303,14 +353,17 @@ class LuminaSyncWindow(ctk.CTk):
                 text_color=BG_DARK if sel else TEXT_PRIMARY,
                 command=lambda e=exe: self._select_program(e),
             )
-            btn.pack(side="left", padx=3, pady=4)
+            btn.pack(side="left", padx=3, pady=6)
             self._program_buttons[exe] = btn
 
     def _select_program(self, exe: str) -> None:
         self._selected_exe = exe
         for name, btn in self._program_buttons.items():
             sel = name == exe
-            btn.configure(fg_color=ACCENT if sel else BG_CARD_HOVER, text_color=BG_DARK if sel else TEXT_PRIMARY)
+            btn.configure(
+                fg_color=ACCENT if sel else BG_CARD_HOVER,
+                text_color=BG_DARK if sel else TEXT_PRIMARY,
+            )
         profile = self._ctx.profiles.get(exe)
         if not profile:
             return
@@ -328,6 +381,25 @@ class LuminaSyncWindow(ctk.CTk):
         self._selected_exe = None
         self._hide_profile_panel()
         self._refresh_program_grid()
+
+    def _on_reset_profile(self) -> None:
+        if not self._selected_exe:
+            return
+        exe = self._selected_exe
+        if not messagebox.askyesno(
+            "Reset profile",
+            f"Reset color profile for {exe} to GPU defaults captured at startup?",
+            parent=self,
+        ):
+            return
+        self._ctx.reset_program_to_gpu_default(exe)
+        self._select_program(exe)
+
+    def _on_pair_mobile(self) -> None:
+        try:
+            PairingDialog(self, self._ctx)
+        except Exception as e:
+            messagebox.showerror("Pair Mobile", str(e), parent=self)
 
     def _refresh_slider_labels(self) -> None:
         if not self._selected_exe:
@@ -414,7 +486,8 @@ class LuminaSyncWindow(ctk.CTk):
             self._engine_label.configure(text="○ Stopped", text_color=TEXT_MUTED)
         n = len(self._ctx.profiles.list_executables())
         focus = eng.active_executable or "—"
-        self._status_label.configure(text=f"{focus} · {n} profile(s)")
+        remote = " · remote on" if self._ctx.remote_is_running else ""
+        self._status_label.configure(text=f"{focus} · {n} profile(s){remote}")
 
     def _status_tick(self) -> None:
         if self._visible and not self._quitting:
@@ -447,6 +520,7 @@ class LuminaSyncWindow(ctk.CTk):
         self._quitting = True
         self._profile_debouncer.cancel()
         self._desktop_debouncer.cancel()
+        release_all_modal_grabs(self)
         self._tray.stop()
         self._ctx.shutdown()
         self.destroy()

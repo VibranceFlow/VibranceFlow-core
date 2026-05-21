@@ -5,7 +5,11 @@ from __future__ import annotations
 import logging
 
 from core.bindings.gdi_gamma import apply_primary_gamma, build_gamma_ramp, read_primary_gamma
-from core.bindings.nvapi_display import NvApiDisplaySession, vibrance_percent_to_level
+from core.bindings.nvapi_display import (
+    NvApiDisplaySession,
+    vibrance_level_to_percent,
+    vibrance_percent_to_level,
+)
 from core.models import ColorProfile, DesktopBaseline
 
 logger = logging.getLogger(__name__)
@@ -25,6 +29,7 @@ class WindowsDisplayManager:
             self._nvapi = None
 
         self._baseline = self.capture_current()
+        self._gpu_default_profile = self._baseline_to_profile(self._baseline)
         logger.info(
             "Baseline captured: vibrance=%s hue=%s",
             self._baseline.vibrance_level,
@@ -34,6 +39,27 @@ class WindowsDisplayManager:
     @property
     def nvapi_available(self) -> bool:
         return self._nvapi_ok
+
+    @property
+    def gpu_default_profile(self) -> ColorProfile:
+        """Color profile matching GPU/desktop state at startup."""
+        return self._gpu_default_profile
+
+    def _baseline_to_profile(self, baseline: DesktopBaseline) -> ColorProfile:
+        vibrance = 50.0
+        if self._nvapi_ok and self._nvapi is not None:
+            try:
+                info = self._nvapi.get_dvc()
+                vibrance = vibrance_level_to_percent(info, baseline.vibrance_level)
+            except Exception as e:
+                logger.warning("Could not map baseline vibrance: %s", e)
+        return ColorProfile(
+            vibrance=vibrance,
+            brightness=0.0,
+            contrast=0.0,
+            gamma=1.0,
+            hue=int(baseline.hue_angle),
+        )
 
     def capture_current(self) -> DesktopBaseline:
         ramp = read_primary_gamma()
