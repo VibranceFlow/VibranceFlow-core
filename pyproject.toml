@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "luminasync-core"
+version = "0.1.0"
+description = "Windows per-game color profiles with optional mobile remote control"
+authors = ["LuminaSync"]
+readme = "README.md"
+license = "GPL-3.0-only"
+packages = [{ include = "core" }, { include = "ui" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+customtkinter = ">=5.2.0"
+Pillow = ">=10.0.0"
+pystray = ">=0.19.0"
+websockets = ">=12.0,<16.0"
+cryptography = ">=42.0.0"
+qrcode = { version = ">=7.4.0", extras = ["pil"] }
+
+[tool.poetry.group.packaging]
+optional = true
+
+[tool.poetry.group.packaging.dependencies]
+nuitka = ">=2.0.0"
+
+[tool.poetry.scripts]
+luminasync-gui = "gui_main:main"
+luminasync = "main:main"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
