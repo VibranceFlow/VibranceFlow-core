@@ -26,6 +26,7 @@ def main() -> int:
         return 1
 
     app = LuminaSyncWindow(ctx, start_hidden=start_hidden)
+    ctx.attach_ui_scheduler(lambda fn, delay=0: app.after(delay, fn))
     app.mainloop()
     return 0
 
