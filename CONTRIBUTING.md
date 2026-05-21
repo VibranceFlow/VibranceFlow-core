@@ -1,12 +1,8 @@
 # Contributing to LuminaSync Core
 
-Thank you for helping improve LuminaSync. This document covers setup, conventions, and how to submit changes.
+Thanks for taking the time to contribute.
 
-## Code of conduct
-
-Be respectful and constructive. Focus on technical merit and user impact.
-
-## Development setup
+## Setup
 
 1. Fork and clone [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core).
 2. Use **Python 3.11+ 64-bit** on Windows 11.
@@ -23,51 +19,54 @@ Be respectful and constructive. Focus on technical merit and user impact.
    copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
    ```
 
-5. Run the GUI: `python gui_main.py` or the CLI engine: `python main.py`.
+5. Run `python gui_main.py` (GUI) or `python main.py` (CLI engine).
 
-## Project layout
+## Repository layout (this repo)
 
 | Path | Role |
 |------|------|
-| `core/` | Display engine, profiles, foreground window monitor |
-| `core/bindings/` | Low-level GDI32 / NVAPI via ctypes (no extra native deps) |
+| `core/` | Engine, profiles, foreground window monitor |
+| `core/bindings/` | GDI32 / NVAPI via ctypes |
 | `ui/` | CustomTkinter GUI, tray, process picker |
-| `docs/` | Architecture, roadmap, PoC notes |
-| `scripts/` | Standalone PoC scripts (not required for the app) |
+| `gui_main.py` | GUI entry point |
+| `main.py` | CLI entry point |
 
-## Conventions
+Architecture write-ups, PoC scripts, and platform experiments are maintained in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC).
 
-- **Language**: English for user-facing strings, docstrings, comments, logs, and documentation.
-- **Scope**: Small, focused PRs. Do not refactor unrelated code.
-- **Style**: Match existing patterns (dataclasses, typed hints, minimal dependencies).
-- **Performance**: The engine polls every ~1s; avoid NVAPI/GDI calls unless the foreground exe changes.
-- **Safety**: `WindowsDisplayManager.shutdown()` must restore the baseline captured at startup.
+## Guidelines
 
-## Pull request process
+- Keep user-facing strings, comments, and logs in **English**.
+- Prefer small, focused pull requests.
+- Match existing style (typed hints, dataclasses, minimal dependencies).
+- The engine should call GDI/NVAPI only when the foreground executable changes.
+- `WindowsDisplayManager.shutdown()` must restore the baseline captured at startup.
 
-1. Open an issue for larger changes (new features, breaking behavior).
+## Pull requests
+
+1. For larger changes, open an issue first.
 2. Branch from `main`: `git checkout -b feature/short-description`.
-3. Test on Windows with an NVIDIA GPU if your change touches display code.
-4. Update `docs/` or `README.md` when behavior or setup changes.
-5. Open a PR with a clear description and test steps.
+3. Test on Windows; use an NVIDIA GPU when touching display code.
+4. Update `README.md` if setup or behavior changes.
+5. Describe what you tested in the PR body.
 
-## Reporting bugs
+## Bug reports
 
-Include:
+Please include:
 
 - Windows version, GPU model, driver version
-- Python version (`python --version`)
+- `python --version`
 - Steps to reproduce
-- Relevant log output from console
-- Whether NVAPI or GDI-only path is in use
+- Console log output
+- Whether NVAPI is available or GDI-only
 
 ## Related repositories
 
-- [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) — future remote control
-- [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) — future Vercel site
-
-API contracts between repos are not finalized yet; coordinate via issues in this repo.
+| Repo | Role |
+|------|------|
+| [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC) | Docs and validation scripts |
+| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Mobile control (planned) |
+| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Web site (planned) |
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/LuminaSync/LuminaSync-core/discussions) or issue if unsure before a large PR.
+Open an issue or discussion on [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core).
