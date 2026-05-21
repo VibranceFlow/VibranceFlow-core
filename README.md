@@ -21,8 +21,19 @@ Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
 
 ## Quick start
 
+### Poetry (recommended)
+
 ```powershell
 cd path\to\LuminaSync-core
+poetry install
+mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
+copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
+poetry run python gui_main.py
+```
+
+### pip
+
+```powershell
 pip install -r requirements.txt
 mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
 copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
@@ -36,7 +47,8 @@ python gui_main.py
 
 - **Add** — running process list with icon preview on selection
 - **Manual** — pick a `.exe` from disk
-- Color sliders appear only after selecting a program
+- Color sliders appear only after selecting a program; **Reset** restores that program’s profile to GPU defaults captured at startup
+- **Pair Mobile** — LAN WebSocket + QR (Fernet-encrypted); server stays on until you quit the app
 - **Minimize** → system tray (double-click the icon to open; **Quit** in the menu exits)
 - **Close (X)** → exits the application
 - **Start with Windows** → Run registry entry with `--tray` (starts minimized to tray)
@@ -72,16 +84,33 @@ A background thread polls the foreground window about once per second. When the 
 ```
 core/
   bindings/         # GDI32 + NVAPI (ctypes)
+  remote/           # LAN WebSocket + Fernet for mobile
   display_manager.py
   profile_manager.py
   window_monitor.py
   engine.py
 ui/                 # CustomTkinter GUI + system tray
+scripts/
+  ws_remote_client.py   # test remote API without a phone
+packaging/          # Nuitka / MSIX / AppImage notes
 gui_main.py
 main.py
 ```
 
-Deeper design notes and Win11/NVAPI validation live in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC).
+### Mobile remote testing (no Android app)
+
+1. Open the GUI → **Pair Mobile** → **Copy JSON** (or scan QR later from the mobile app).
+2. In another terminal:
+
+```powershell
+poetry run python scripts/ws_remote_client.py --pairing pairing.json --demo
+```
+
+Or pass `--host`, `--port`, and `--key` from the JSON. Interactive mode omits `--demo`.
+
+Allow LuminaSync through the Windows firewall on **private** networks when prompted.
+
+Deeper design notes and Win11/NVAPI validation live in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC). Packaging: [packaging/README.md](packaging/README.md).
 
 ## Contributing
 

@@ -9,8 +9,10 @@ Thanks for taking the time to contribute.
 3. Install dependencies:
 
    ```powershell
-   pip install -r requirements.txt
+   poetry install
    ```
+
+   Or: `pip install -r requirements.txt`
 
 4. Copy the example profile:
 
