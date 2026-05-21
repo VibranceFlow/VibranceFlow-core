@@ -9,12 +9,13 @@ Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
 | Repository | Purpose |
 |------------|---------|
 | [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core) | Windows engine + GUI (this repo) |
+| [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC) | Validation scripts, architecture notes, experiments |
 | [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Mobile remote control (planned) |
-| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Marketing / docs site on Vercel (planned) |
+| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Site on Vercel (planned) |
 
 ## Requirements
 
-- Windows 11 (validated in PoC)
+- Windows 11
 - Python 3.11+ **64-bit**
 - NVIDIA desktop GPU with Digital Vibrance in the driver (optional; GDI works without NVAPI)
 
@@ -33,10 +34,10 @@ copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
 python gui_main.py
 ```
 
-- **Add** — fast process list; icon preview on selection
+- **Add** — running process list with icon preview on selection
 - **Manual** — pick a `.exe` from disk
-- Color sliders appear **only** after selecting a program
-- **Minimize** → system tray (double-click tray icon to open; **Quit** in menu exits)
+- Color sliders appear only after selecting a program
+- **Minimize** → system tray (double-click the icon to open; **Quit** in the menu exits)
 - **Close (X)** → exits the application
 - **Start with Windows** → Run registry entry with `--tray` (starts minimized to tray)
 
@@ -64,28 +65,27 @@ NVIDIA Control Panel–style units:
 
 Stored at `%APPDATA%\LuminaSync\profiles.json` (see `profiles.json.example`).
 
-## Architecture
+## How it works
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). For AI-assisted development in Cursor, see [AGENTS.md](AGENTS.md).
+A background thread polls the foreground window about once per second. When the executable matches a configured profile, display settings are applied via GDI gamma LUT (brightness, contrast, gamma) and NVAPI (vibrance, hue). Otherwise the desktop profile is applied, or the original baseline is restored if the observer is disabled.
 
 ```
 core/
-  bindings/       # GDI32 + NVAPI (ctypes)
+  bindings/         # GDI32 + NVAPI (ctypes)
   display_manager.py
   profile_manager.py
   window_monitor.py
   engine.py
-ui/               # CustomTkinter GUI + tray
+ui/                 # CustomTkinter GUI + system tray
 gui_main.py
 main.py
-scripts/          # Historical PoCs (local validation)
 ```
+
+Deeper design notes and Win11/NVAPI validation live in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC).
 
 ## Contributing
 
-We welcome issues and pull requests. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
-
-For org remotes and moving this repo into `LuminaSync-core` under a parent workspace, see [docs/WORKSPACE.md](docs/WORKSPACE.md).
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
