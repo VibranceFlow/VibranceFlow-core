@@ -1,4 +1,4 @@
-"""Ícones de executáveis Windows — cache + SHGetFileInfo via ctypes."""
+"""Windows executable icons — cache + SHGetFileInfo via ctypes."""
 
 from __future__ import annotations
 
@@ -154,7 +154,7 @@ def get_pil_icon(path_or_name: str, size: tuple[int, int] = ICON_SMALL) -> Image
 
 
 def get_ctk_image(path_or_name: str, size: tuple[int, int] = ICON_SMALL):
-    """Retorna customtkinter.CTkImage ou None."""
+    """Return customtkinter.CTkImage or None."""
     import customtkinter as ctk
 
     pil = get_pil_icon(path_or_name, size)

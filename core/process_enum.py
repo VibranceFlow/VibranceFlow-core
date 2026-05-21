@@ -1,4 +1,4 @@
-"""Lista processos em execução — Toolhelp32 via ctypes (sem psutil)."""
+"""Running process list — Toolhelp32 via ctypes (no psutil)."""
 
 from __future__ import annotations
 
@@ -69,11 +69,11 @@ def resolve_process_path(pid: int) -> str:
 
 def list_running_processes(*, resolve_paths: bool = False) -> list[RunningProcess]:
     """
-    Lista processos .exe únicos. Por padrão NÃO resolve caminho completo (rápido).
+    List unique .exe processes. By default does NOT resolve full paths (fast).
     """
     snap = _kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
     if snap == wintypes.HANDLE(-1).value:
-        raise OSError("CreateToolhelp32Snapshot falhou", ctypes.get_last_error())
+        raise OSError("CreateToolhelp32Snapshot failed", ctypes.get_last_error())
 
     entry = PROCESSENTRY32W()
     entry.dwSize = sizeof(PROCESSENTRY32W)

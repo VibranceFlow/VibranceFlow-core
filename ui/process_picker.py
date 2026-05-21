@@ -1,4 +1,4 @@
-"""Diálogo de processos — Listbox nativo (rápido) + ícone na seleção."""
+"""Process picker dialog — fast Treeview + icon on selection."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         self._icon_ref: tk.PhotoImage | None = None
         self._filter_job: str | None = None
 
-        self.title("Processos")
+        self.title("Processes")
         self.geometry("480x400")
         self.minsize(420, 320)
         self.configure(fg_color=BG_DARK)
@@ -43,7 +43,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         top.pack(fill="x", padx=10, pady=(8, 4))
         self._search = ctk.CTkEntry(
             top,
-            placeholder_text="Filtrar...",
+            placeholder_text="Filter...",
             height=28,
             fg_color=BG_INPUT,
             border_color=ACCENT,
@@ -90,7 +90,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         self._tree.column("#0", width=28, stretch=False)
         self._tree.column("name", width=300, stretch=True)
         self._tree.heading("#0", text="")
-        self._tree.heading("name", text="Processo")
+        self._tree.heading("name", text="Process")
         scroll = ttk.Scrollbar(list_frame, orient="vertical", command=self._tree.yview)
         self._tree.configure(yscrollcommand=scroll.set)
         self._tree.pack(side="left", fill="both", expand=True)
@@ -124,7 +124,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         foot.pack(fill="x", padx=10, pady=8)
         ctk.CTkButton(
             foot,
-            text="Adicionar",
+            text="Add",
             width=90,
             height=28,
             fg_color=ACCENT,
@@ -134,7 +134,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         ).pack(side="right", padx=(4, 0))
         ctk.CTkButton(
             foot,
-            text="Cancelar",
+            text="Cancel",
             width=80,
             height=28,
             fg_color="transparent",
@@ -147,7 +147,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
 
         self._status = ctk.CTkLabel(
             self,
-            text="Carregando...",
+            text="Loading...",
             font=FONT_SMALL,
             text_color=TEXT_MUTED,
         )
@@ -161,7 +161,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
         self._filter_job = self.after(120, self._apply_filter)
 
     def _reload_async(self) -> None:
-        self._status.configure(text="Carregando processos...")
+        self._status.configure(text="Loading processes...")
         self._tree.delete(*self._tree.get_children())
 
         def work() -> None:
@@ -179,7 +179,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
 
     def _set_processes(self, procs: list[RunningProcess]) -> None:
         self._processes = procs
-        self._status.configure(text=f"{len(procs)} processos")
+        self._status.configure(text=f"{len(procs)} processes")
         self._apply_filter()
 
     def _apply_filter(self) -> None:
@@ -193,7 +193,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
                 continue
             self._filtered.append(p)
             self._tree.insert("", "end", iid=p.name, text=" ", values=(p.name,))
-        self._status.configure(text=f"{len(self._filtered)} exibidos")
+        self._status.configure(text=f"{len(self._filtered)} shown")
 
     def _proc_by_name(self, name: str) -> RunningProcess | None:
         for p in self._filtered:

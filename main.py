@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LuminaSync — entry point do motor (sem GUI)."""
+"""LuminaSync — CLI engine entry point (no GUI)."""
 
 from __future__ import annotations
 
@@ -25,11 +25,11 @@ def main() -> int:
     executables = profiles.list_executables()
     if not executables:
         logger.warning(
-            "Nenhum perfil em %s — copie profiles.json.example e configure jogos.",
+            "No profiles at %s — copy profiles.json.example and add games.",
             profiles.path,
         )
     else:
-        logger.info("Perfis carregados: %s", ", ".join(executables))
+        logger.info("Profiles loaded: %s", ", ".join(executables))
 
     display = WindowsDisplayManager()
     engine = LuminaEngine(display, profiles)
@@ -42,7 +42,7 @@ def main() -> int:
     atexit.register(_shutdown)
 
     def _signal_handler(_signum, _frame) -> None:
-        logger.info("Encerrando...")
+        logger.info("Shutting down...")
         _shutdown()
         sys.exit(0)
 
@@ -50,7 +50,7 @@ def main() -> int:
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, _signal_handler)
 
-    logger.info("LuminaSync ativo. Ctrl+C para sair.")
+    logger.info("LuminaSync running. Press Ctrl+C to exit.")
     engine.start()
 
     import time

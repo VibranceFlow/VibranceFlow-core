@@ -1,4 +1,4 @@
-"""Janela principal LuminaSync — layout compacto."""
+"""LuminaSync main window — compact layout."""
 
 from __future__ import annotations
 
@@ -114,7 +114,7 @@ class LuminaSyncWindow(ctk.CTk):
 
         self._chk_autostart = ctk.CTkCheckBox(
             row,
-            text="Iniciar c/ Windows",
+            text="Start with Windows",
             width=130,
             font=FONT_SMALL,
             fg_color=ACCENT,
@@ -160,7 +160,7 @@ class LuminaSyncWindow(ctk.CTk):
 
         top = ctk.CTkFrame(box, fg_color="transparent")
         top.pack(fill="x", padx=8, pady=(6, 4))
-        ctk.CTkLabel(top, text="Programas", font=FONT_SMALL, text_color=TEXT_PRIMARY).pack(
+        ctk.CTkLabel(top, text="Programs", font=FONT_SMALL, text_color=TEXT_PRIMARY).pack(
             side="left"
         )
         for text, cmd, w, color in (
@@ -282,7 +282,7 @@ class LuminaSyncWindow(ctk.CTk):
         if not exes:
             ctk.CTkLabel(
                 self._programs_scroll,
-                text="(vazio)",
+                text="(empty)",
                 font=FONT_SMALL,
                 text_color=TEXT_MUTED,
             ).pack(padx=8, pady=4)
@@ -409,12 +409,12 @@ class LuminaSyncWindow(ctk.CTk):
     def _update_status(self) -> None:
         eng = self._ctx.engine
         if eng.is_running:
-            self._engine_label.configure(text="● Ativo", text_color=SUCCESS)
+            self._engine_label.configure(text="● Active", text_color=SUCCESS)
         else:
-            self._engine_label.configure(text="○ Parado", text_color=TEXT_MUTED)
+            self._engine_label.configure(text="○ Stopped", text_color=TEXT_MUTED)
         n = len(self._ctx.profiles.list_executables())
         focus = eng.active_executable or "—"
-        self._status_label.configure(text=f"{focus} · {n} perfis")
+        self._status_label.configure(text=f"{focus} · {n} profile(s)")
 
     def _status_tick(self) -> None:
         if self._visible and not self._quitting:
@@ -424,7 +424,7 @@ class LuminaSyncWindow(ctk.CTk):
     def _hide_to_tray(self) -> None:
         self._visible = False
         self.withdraw()
-        self._tray.notify("LuminaSync", "Rodando na bandeja. Duplo clique no ícone para abrir.")
+        self._tray.notify("LuminaSync", "Running in the tray. Double-click the icon to open.")
 
     def _show_from_tray(self) -> None:
         self._visible = True

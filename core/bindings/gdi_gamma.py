@@ -1,4 +1,4 @@
-"""GDI32 gamma ramp — brilho, contraste e gama (área de trabalho)."""
+"""GDI32 gamma ramp — brightness, contrast, and gamma (desktop)."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ def _open_primary_gamma_dc():
     device = primary_display_device()
     hdc = gdi32.CreateDCW("DISPLAY", device, None, None)
     if not hdc:
-        raise OSError(f"CreateDCW falhou para {device}", ctypes.get_last_error())
+        raise OSError(f"CreateDCW failed for {device}", ctypes.get_last_error())
     return gdi32, hdc
 
 
@@ -104,7 +104,7 @@ def read_primary_gamma() -> GAMMARAMP:
     try:
         ramp = GAMMARAMP()
         if not gdi32.GetDeviceGammaRamp(hdc, byref(ramp)):
-            raise OSError("GetDeviceGammaRamp falhou", ctypes.get_last_error())
+            raise OSError("GetDeviceGammaRamp failed", ctypes.get_last_error())
         return ramp
     finally:
         gdi32.DeleteDC(hdc)
@@ -116,7 +116,7 @@ def apply_primary_gamma(ramp: GAMMARAMP) -> None:
     gdi32.SetDeviceGammaRamp.restype = wintypes.BOOL
     try:
         if not gdi32.SetDeviceGammaRamp(hdc, byref(ramp)):
-            raise OSError("SetDeviceGammaRamp falhou", ctypes.get_last_error())
+            raise OSError("SetDeviceGammaRamp failed", ctypes.get_last_error())
     finally:
         gdi32.DeleteDC(hdc)
 
@@ -126,7 +126,7 @@ def calculate_lut_channel(
     contrast: float = 0.5,
     gamma: float = 1.0,
 ) -> list[int]:
-    """LUT 256 pontos — algoritmo do Painel NVIDIA (NvAPIWrapper #20)."""
+    """256-point LUT — NVIDIA panel algorithm (NvAPIWrapper #20)."""
     data_points = 256
     gamma = max(0.4, min(2.8, gamma))
     contrast = (max(0.0, min(1.0, contrast)) - 0.5) * 2.0
@@ -146,7 +146,7 @@ def calculate_lut_channel(
 
 
 def panel_percent_to_slider(percent_offset: float) -> float:
-    """'+42%' do painel → entrada 0–1 (0.5 = neutro)."""
+    """Panel '+42%' → 0–1 input (0.5 = neutral)."""
     return max(0.0, min(1.0, 0.5 + percent_offset / 100.0))
 
 

@@ -1,60 +1,72 @@
-# LuminaSync
+# LuminaSync Core
 
-Aplicativo Windows em background que aplica perfis de cor (vibrance, brilho, contraste, gama) quando um jogo configurado está em foco, e restaura o desktop ao sair.
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-## Requisitos
+Windows desktop app that applies per-game color profiles (vibrance, brightness, contrast, gamma, hue) when a configured executable is in focus, and restores desktop settings when you switch away.
 
-- Windows 11 (validado na PoC)
+Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
+
+| Repository | Purpose |
+|------------|---------|
+| [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core) | Windows engine + GUI (this repo) |
+| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Mobile remote control (planned) |
+| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Marketing / docs site on Vercel (planned) |
+
+## Requirements
+
+- Windows 11 (validated in PoC)
 - Python 3.11+ **64-bit**
-- GPU NVIDIA desktop com Digital Vibrance no driver (opcional; GDI funciona sem NVAPI)
+- NVIDIA desktop GPU with Digital Vibrance in the driver (optional; GDI works without NVAPI)
 
-## Instalação rápida
+## Quick start
 
 ```powershell
-cd d:\CODES\LuminaSync
+cd path\to\LuminaSync-core
 pip install -r requirements.txt
 mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
 copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
 ```
 
-### Interface gráfica (recomendado)
+### GUI (recommended)
 
 ```powershell
 python gui_main.py
 ```
 
-- **Add** — lista processos (rápida; ícone na pré-visualização ao selecionar)
-- **Manual** — seleciona um `.exe` no disco
-- Sliders de cor **só aparecem** ao escolher um programa na lista
-- **Minimizar** → bandeja do sistema (duplo clique no ícone para abrir; **Sair** no menu encerra)
-- **Fechar (X)** → encerra o aplicativo
-- **Iniciar c/ Windows** → registro Run com `--tray` (abre minimizado na bandeja)
+- **Add** — fast process list; icon preview on selection
+- **Manual** — pick a `.exe` from disk
+- Color sliders appear **only** after selecting a program
+- **Minimize** → system tray (double-click tray icon to open; **Quit** in menu exits)
+- **Close (X)** → exits the application
+- **Start with Windows** → Run registry entry with `--tray` (starts minimized to tray)
 
 ```powershell
 python gui_main.py --tray
 ```
 
-### Motor CLI (sem GUI)
+### CLI engine (no GUI)
 
 ```powershell
 python main.py
 ```
 
-## Perfis (`profiles.json`)
+## Profiles (`profiles.json`)
 
-Unidades estilo Painel NVIDIA:
+NVIDIA Control Panel–style units:
 
-| Campo | Descrição |
-|-------|-----------|
+| Field | Description |
+|-------|-------------|
 | `vibrance` | 0–100 (%) |
-| `brightness` | offset % (ex.: `42` = +42%) |
+| `brightness` | offset % (e.g. `42` = +42%) |
 | `contrast` | offset % |
 | `gamma` | 0.4–2.8 |
-| `hue` | graus 0–359 (opcional) |
+| `hue` | degrees 0–359 (optional) |
 
-## Arquitetura
+Stored at `%APPDATA%\LuminaSync\profiles.json` (see `profiles.json.example`).
 
-Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) e [AGENTS.md](AGENTS.md).
+## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). For AI-assisted development in Cursor, see [AGENTS.md](AGENTS.md).
 
 ```
 core/
@@ -63,19 +75,18 @@ core/
   profile_manager.py
   window_monitor.py
   engine.py
+ui/               # CustomTkinter GUI + tray
+gui_main.py
 main.py
-scripts/          # PoCs históricas
+scripts/          # Historical PoCs (local validation)
 ```
 
-## PoCs (validação)
+## Contributing
 
-```powershell
-python scripts/poc_test.py
-python scripts/poc_panel_color_test.py
-```
+We welcome issues and pull requests. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 
-Resultados: [docs/POC_FINDINGS.md](docs/POC_FINDINGS.md)
+For org remotes and moving this repo into `LuminaSync-core` under a parent workspace, see [docs/WORKSPACE.md](docs/WORKSPACE.md).
 
-## Roadmap
+## License
 
-[Fases 3–5 (GUI, tray, build)](docs/ROADMAP.md)
+GPL-3.0 — see [LICENSE](LICENSE).

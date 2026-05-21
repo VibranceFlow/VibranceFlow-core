@@ -1,8 +1,4 @@
 __pycache__/
-.cursor/
-AGENTS.md
-docs/
-scripts/
 *.py[cod]
 *$py.class
 *.egg-info/
@@ -18,3 +14,9 @@ env/
 .vscode/
 *.user
 profiles.json
+
+# Local PoC scripts
+scripts/
+.cursor/
+docs/
+AGENTS.md

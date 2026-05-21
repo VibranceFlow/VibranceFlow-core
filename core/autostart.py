@@ -1,4 +1,4 @@
-"""Iniciar com Windows — registro Run."""
+"""Windows startup — HKCU Run registry entry."""
 
 from __future__ import annotations
 

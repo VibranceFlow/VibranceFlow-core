@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LuminaSync — interface gráfica."""
+"""LuminaSync — graphical user interface entry point."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def main() -> int:
     try:
         ctx = LuminaAppContext()
     except Exception as e:
-        print(f"Falha ao iniciar LuminaSync: {e}", file=sys.stderr)
+        print(f"Failed to start LuminaSync: {e}", file=sys.stderr)
         return 1
 
     app = LuminaSyncWindow(ctx, start_hidden=start_hidden)
