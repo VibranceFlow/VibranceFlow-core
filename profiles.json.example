@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "settings": {
+    "desktop_vibrance": 50,
+    "desktop_brightness": 0,
+    "desktop_contrast": 0,
+    "desktop_gamma": 1.0,
+    "desktop_hue": 0,
+    "observer_enabled": true,
+    "affect_primary_only": false,
+    "autostart": false
+  },
+  "profiles": {
+    "Gw2-64.exe": {
+      "vibrance": 75,
+      "brightness": 42,
+      "contrast": 50,
+      "gamma": 1.1,
+      "hue": 0
+    },
+    "notepad.exe": {
+      "vibrance": 30,
+      "brightness": 10,
+      "contrast": 20,
+      "gamma": 1.0,
+      "hue": 0
+    }
+  }
+}
