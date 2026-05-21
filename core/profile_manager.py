@@ -1,4 +1,4 @@
-"""Persistência de perfis em %APPDATA%/LuminaSync/profiles.json."""
+"""Profile persistence at %APPDATA%/LuminaSync/profiles.json."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ PROFILE_VERSION = 1
 def default_profiles_path() -> Path:
     appdata = os.environ.get("APPDATA")
     if not appdata:
-        raise OSError("APPDATA não definido.")
+        raise OSError("APPDATA environment variable is not set.")
     return Path(appdata) / "LuminaSync" / "profiles.json"
 
 
@@ -39,7 +39,7 @@ class ProfileManager:
         try:
             raw = json.loads(self._path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError) as e:
-            logger.error("Erro ao ler %s: %s", self._path, e)
+            logger.error("Failed to read %s: %s", self._path, e)
             self._profiles = {}
             return
 
@@ -55,7 +55,7 @@ class ProfileManager:
                 try:
                     self._profiles[exe] = ColorProfile.from_dict(data)
                 except (KeyError, TypeError, ValueError) as e:
-                    logger.warning("Perfil inválido para %s: %s", exe, e)
+                    logger.warning("Invalid profile for %s: %s", exe, e)
 
     def save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)

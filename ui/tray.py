@@ -31,8 +31,8 @@ class TrayController:
         import pystray
 
         menu = pystray.Menu(
-            pystray.MenuItem("Abrir LuminaSync", self._handle_show, default=True),
-            pystray.MenuItem("Sair", self._handle_quit),
+            pystray.MenuItem("Open LuminaSync", self._handle_show, default=True),
+            pystray.MenuItem("Quit", self._handle_quit),
         )
         self._icon = pystray.Icon("LuminaSync", _default_icon_image(), "LuminaSync", menu)
 

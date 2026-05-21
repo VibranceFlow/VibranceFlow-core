@@ -1,4 +1,4 @@
-"""Gerenciador de display Windows — GDI32 + NVAPI."""
+"""Windows display manager — GDI32 + NVAPI."""
 
 from __future__ import annotations
 
@@ -19,14 +19,14 @@ class WindowsDisplayManager:
             self._nvapi = NvApiDisplaySession()
             self._nvapi.open()
             self._nvapi_ok = True
-            logger.info("NVAPI inicializada (vibrance/matiz disponíveis).")
+            logger.info("NVAPI initialized (vibrance/hue available).")
         except Exception as e:
-            logger.warning("NVAPI indisponível (%s); apenas GDI32 ativo.", e)
+            logger.warning("NVAPI unavailable (%s); GDI32 only.", e)
             self._nvapi = None
 
         self._baseline = self.capture_current()
         logger.info(
-            "Baseline capturado: vibrance=%s hue=%s",
+            "Baseline captured: vibrance=%s hue=%s",
             self._baseline.vibrance_level,
             self._baseline.hue_angle,
         )
@@ -43,16 +43,16 @@ class WindowsDisplayManager:
             try:
                 vibrance = self._nvapi.get_dvc().currentLevel
             except Exception as e:
-                logger.warning("Falha ao ler vibrance: %s", e)
+                logger.warning("Failed to read vibrance: %s", e)
             try:
                 hue = self._nvapi.get_hue().currentAngle
             except Exception as e:
-                logger.warning("Falha ao ler matiz: %s", e)
+                logger.warning("Failed to read hue: %s", e)
         return DesktopBaseline(gamma_ramp=ramp, vibrance_level=vibrance, hue_angle=hue)
 
     def set_vibrance(self, percent: float) -> None:
         if not self._nvapi_ok or self._nvapi is None:
-            logger.debug("set_vibrance ignorado (NVAPI off).")
+            logger.debug("set_vibrance skipped (NVAPI off).")
             return
         info = self._nvapi.get_dvc()
         level = vibrance_percent_to_level(info, percent)
@@ -83,17 +83,17 @@ class WindowsDisplayManager:
             try:
                 self._nvapi.set_dvc(self._baseline.vibrance_level)
             except Exception as e:
-                logger.error("Falha ao restaurar vibrance: %s", e)
+                logger.error("Failed to restore vibrance: %s", e)
             try:
                 self._nvapi.set_hue(self._baseline.hue_angle)
             except Exception as e:
-                logger.error("Falha ao restaurar matiz: %s", e)
+                logger.error("Failed to restore hue: %s", e)
 
     def shutdown(self) -> None:
         try:
             self.restore_defaults()
         except Exception as e:
-            logger.error("Falha ao restaurar no shutdown: %s", e)
+            logger.error("Failed to restore on shutdown: %s", e)
         if self._nvapi is not None:
             try:
                 self._nvapi.close()

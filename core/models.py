@@ -1,4 +1,4 @@
-"""Modelos de dados do LuminaSync."""
+"""LuminaSync data models."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from core.bindings.gdi_gamma import GAMMARAMP
 
 @dataclass(frozen=True)
 class ColorProfile:
-    """Perfil de cor para um executável (unidades estilo Painel NVIDIA)."""
+    """Color profile for an executable (NVIDIA Control Panel–style units)."""
 
     vibrance: float
     brightness: float
@@ -41,7 +41,7 @@ class ColorProfile:
 
 @dataclass
 class DesktopBaseline:
-    """Estado capturado na inicialização — usado em restore_defaults()."""
+    """State captured at startup — used by restore_defaults()."""
 
     gamma_ramp: GAMMARAMP
     vibrance_level: int
@@ -50,7 +50,7 @@ class DesktopBaseline:
 
 @dataclass
 class AppSettings:
-    """Configurações globais (área de trabalho / observer)."""
+    """Global settings (desktop profile / observer / autostart)."""
 
     desktop_vibrance: float = 50.0
     desktop_brightness: float = 0.0

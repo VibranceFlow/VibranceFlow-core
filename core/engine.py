@@ -1,4 +1,4 @@
-"""Motor principal — loop de monitoramento e state machine."""
+"""Main engine — foreground polling loop and state machine."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ class LuminaEngine:
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._run, name="LuminaEngine", daemon=True)
         self._thread.start()
-        logger.info("Engine iniciado (intervalo=%.1fs).", self._poll_interval)
+        logger.info("Engine started (interval=%.1fs).", self._poll_interval)
 
     def stop(self) -> None:
         self._stop_event.set()
@@ -61,17 +61,17 @@ class LuminaEngine:
         try:
             self._display.restore_defaults()
         except Exception as e:
-            logger.error("Erro ao restaurar baseline no stop: %s", e)
+            logger.error("Failed to restore baseline on stop: %s", e)
         self._active_exe = None
         self._state = "desktop"
-        logger.info("Engine parado.")
+        logger.info("Engine stopped.")
 
     def _run(self) -> None:
         while not self._stop_event.wait(self._poll_interval):
             try:
                 self._tick()
             except Exception:
-                logger.exception("Erro no tick do engine.")
+                logger.exception("Engine tick error.")
 
     def _tick(self) -> None:
         exe = get_foreground_executable()
@@ -85,11 +85,11 @@ class LuminaEngine:
         if profile is not None:
             self._display.apply_profile(profile)
             self._state = "profile"
-            logger.info("Perfil aplicado: %s (antes: %s)", exe, prev)
+            logger.info("Profile applied: %s (was: %s)", exe, prev)
         else:
             self._apply_desktop()
             self._state = "desktop"
-            logger.info("Desktop restaurado (foreground: %s, antes: %s)", exe, prev)
+            logger.info("Desktop restored (foreground: %s, was: %s)", exe, prev)
 
     def _apply_desktop(self) -> None:
         if not self._profiles.settings.observer_enabled:

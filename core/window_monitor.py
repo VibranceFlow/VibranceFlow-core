@@ -1,4 +1,4 @@
-"""Monitor de janela em foreground — ctypes puro, sem psutil."""
+"""Foreground window monitor — pure ctypes, no psutil."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ _size_dw = wintypes.DWORD(_PATH_BUF_CHARS)
 
 def get_foreground_executable() -> str | None:
     """
-    Retorna o nome do executável (.exe) da janela em foreground, ou None.
+    Return the foreground window executable basename (.exe), or None.
     """
     hwnd = _user32.GetForegroundWindow()
     if not hwnd:

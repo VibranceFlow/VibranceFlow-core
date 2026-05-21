@@ -1,4 +1,4 @@
-"""NVAPI — Digital Vibrance e matiz (ctypes / nvapi64.dll)."""
+"""NVAPI — Digital Vibrance and hue (ctypes / nvapi64.dll)."""
 
 from __future__ import annotations
 
@@ -59,14 +59,14 @@ def struct_bits() -> int:
 
 
 def vibrance_percent_to_level(info: NV_DISPLAY_DVC_INFO, percent: float) -> int:
-    """Converte vibrance 0–100% para nível NVAPI min..max."""
+    """Convert vibrance 0–100% to NVAPI min..max level."""
     ratio = max(0.0, min(100.0, percent)) / 100.0
     span = info.maxLevel - info.minLevel
     return min(info.maxLevel, info.minLevel + int(round(span * ratio)))
 
 
 class NvApiDisplaySession:
-    """Sessão NVAPI de longa duração (DVC + Hue)."""
+    """Long-lived NVAPI session (DVC + Hue)."""
 
     def __init__(self) -> None:
         self._dll: WinDLL | None = None
@@ -79,12 +79,12 @@ class NvApiDisplaySession:
         fid = api_id if api_id is not None else NVAPI_ID[name]
         ptr = self._qi(fid)
         if not ptr:
-            raise RuntimeError(f"nvapi_QueryInterface retornou NULL para {name}")
+            raise RuntimeError(f"nvapi_QueryInterface returned NULL for {name}")
         self._fns[name] = proto(ptr)
 
     def open(self) -> None:
         if struct_bits() != 64:
-            raise RuntimeError("LuminaSync requer Python 64-bit (nvapi64.dll).")
+            raise RuntimeError("LuminaSync requires 64-bit Python (nvapi64.dll).")
         for path in ("nvapi64", "nvapi"):
             try:
                 self._dll = WinDLL(path)
@@ -92,7 +92,7 @@ class NvApiDisplaySession:
             except OSError:
                 self._dll = None
         if self._dll is None:
-            raise RuntimeError("nvapi64.dll não encontrada. Instale o driver NVIDIA.")
+            raise RuntimeError("nvapi64.dll not found. Install the NVIDIA driver.")
 
         self._qi = self._dll.nvapi_QueryInterface
         self._qi.argtypes = [c_uint]
@@ -123,7 +123,7 @@ class NvApiDisplaySession:
 
         st = self._fns["Initialize"]()
         if st != NVAPI_OK:
-            raise RuntimeError(f"NvAPI_Initialize falhou: {st}")
+            raise RuntimeError(f"NvAPI_Initialize failed: {st}")
 
         self._display_handle = self.primary_display_handle()
 
@@ -138,16 +138,16 @@ class NvApiDisplaySession:
     @property
     def display_handle(self) -> int:
         if self._display_handle is None:
-            raise RuntimeError("Sessão NVAPI não aberta.")
+            raise RuntimeError("NVAPI session is not open.")
         return self._display_handle
 
     def primary_display_handle(self) -> int:
         handle = c_void_p()
         st = self._fns["EnumNvidiaDisplayHandle"](0, byref(handle))
         if st == NVAPI_END_ENUMERATION or not handle.value:
-            raise RuntimeError("Nenhum display NVIDIA enumerado.")
+            raise RuntimeError("No NVIDIA display enumerated.")
         if st != NVAPI_OK:
-            raise RuntimeError(f"EnumNvidiaDisplayHandle falhou: {st}")
+            raise RuntimeError(f"EnumNvidiaDisplayHandle failed: {st}")
         return handle.value
 
     def get_dvc(self) -> NV_DISPLAY_DVC_INFO:
@@ -155,23 +155,23 @@ class NvApiDisplaySession:
         info.version = _dvc_version()
         st = self._fns["GetDVCInfo"](self.display_handle, 0, byref(info))
         if st != NVAPI_OK:
-            raise RuntimeError(f"NvAPI_GetDVCInfo falhou: {st}")
+            raise RuntimeError(f"NvAPI_GetDVCInfo failed: {st}")
         return info
 
     def set_dvc(self, level: int) -> None:
         st = self._fns["SetDVCLevel"](self.display_handle, 0, int(level))
         if st != NVAPI_OK:
-            raise RuntimeError(f"NvAPI_SetDVCLevel({level}) falhou: {st}")
+            raise RuntimeError(f"NvAPI_SetDVCLevel({level}) failed: {st}")
 
     def get_hue(self) -> NV_DISPLAY_HUE_INFO:
         info = NV_DISPLAY_HUE_INFO()
         info.version = _hue_version()
         st = self._fns["GetHUEInfo"](self.display_handle, 0, byref(info))
         if st != NVAPI_OK:
-            raise RuntimeError(f"NvAPI_GetHUEInfo falhou: {st}")
+            raise RuntimeError(f"NvAPI_GetHUEInfo failed: {st}")
         return info
 
     def set_hue(self, angle: int) -> None:
         st = self._fns["SetHUEAngle"](self.display_handle, 0, int(angle) % 360)
         if st != NVAPI_OK:
-            raise RuntimeError(f"NvAPI_SetHUEAngle({angle}) falhou: {st}")
+            raise RuntimeError(f"NvAPI_SetHUEAngle({angle}) failed: {st}")

@@ -1,4 +1,4 @@
-"""LuminaSync core — motor de perfis de cor por executável."""
+"""LuminaSync core — per-executable color profile engine."""
 
 from core.display_manager import WindowsDisplayManager
 from core.engine import LuminaEngine

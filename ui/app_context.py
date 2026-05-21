@@ -1,4 +1,4 @@
-"""Contexto compartilhado entre UI e motor."""
+"""Shared context between UI and engine."""
 
 from __future__ import annotations
 
@@ -102,8 +102,8 @@ class LuminaAppContext:
 
     def pick_exe_manually(self) -> str | None:
         path = filedialog.askopenfilename(
-            title="Selecionar executável",
-            filetypes=[("Executável", "*.exe"), ("Todos", "*.*")],
+            title="Select executable",
+            filetypes=[("Executable", "*.exe"), ("All files", "*.*")],
         )
         if not path:
             return None
