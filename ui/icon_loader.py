@@ -20,6 +20,7 @@ FILE_ATTRIBUTE_NORMAL = 0x80
 
 ICON_SMALL = (16, 16)
 ICON_LARGE = (24, 24)
+ICON_PREVIEW = (48, 48)
 
 
 class SHFILEINFOW(Structure):
@@ -47,8 +48,8 @@ class ICONINFO(Structure):
         ("fIcon", wintypes.BOOL),
         ("xHotspot", wintypes.DWORD),
         ("yHotspot", wintypes.DWORD),
-        ("hbmMask", wintypes.HANDLE),
-        ("hbmColor", wintypes.HANDLE),
+        ("hbmMask", ctypes.c_void_p),
+        ("hbmColor", ctypes.c_void_p),
     ]
 
 
@@ -84,11 +85,43 @@ BI_RGB = 0
 DIB_RGB_COLORS = 0
 
 
+def _configure_win32_api() -> None:
+    """64-bit-safe HANDLE/HGDIOBJ signatures (default argtypes use 32-bit c_int)."""
+    _user32.GetIconInfo.argtypes = [wintypes.HICON, ctypes.POINTER(ICONINFO)]
+    _user32.GetIconInfo.restype = wintypes.BOOL
+    _user32.DestroyIcon.argtypes = [wintypes.HICON]
+    _user32.DestroyIcon.restype = wintypes.BOOL
+    _user32.GetDC.argtypes = [wintypes.HWND]
+    _user32.GetDC.restype = wintypes.HDC
+    _user32.ReleaseDC.argtypes = [wintypes.HWND, wintypes.HDC]
+    _user32.ReleaseDC.restype = ctypes.c_int
+    _gdi32.GetObjectW.argtypes = [wintypes.HGDIOBJ, ctypes.c_int, ctypes.c_void_p]
+    _gdi32.GetObjectW.restype = ctypes.c_int
+    _gdi32.DeleteObject.argtypes = [wintypes.HGDIOBJ]
+    _gdi32.DeleteObject.restype = wintypes.BOOL
+    _gdi32.GetDIBits.argtypes = [
+        wintypes.HDC,
+        wintypes.HBITMAP,
+        wintypes.UINT,
+        wintypes.UINT,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        wintypes.UINT,
+    ]
+    _gdi32.GetDIBits.restype = ctypes.c_int
+
+
+_configure_win32_api()
+
+
 def _hicon_to_pil(hicon: int, size: tuple[int, int]) -> Image.Image | None:
+    hicon_handle = wintypes.HICON(hicon)
     ii = ICONINFO()
-    if not _user32.GetIconInfo(hicon, byref(ii)):
+    if not _user32.GetIconInfo(hicon_handle, byref(ii)):
         return None
     try:
+        if not ii.hbmColor:
+            return None
         bmp = BITMAP()
         if not _gdi32.GetObjectW(ii.hbmColor, sizeof(BITMAP), byref(bmp)):
             return None
@@ -124,7 +157,7 @@ def _hicon_to_pil(hicon: int, size: tuple[int, int]) -> Image.Image | None:
             _gdi32.DeleteObject(ii.hbmColor)
         if ii.hbmMask:
             _gdi32.DeleteObject(ii.hbmMask)
-        _user32.DestroyIcon(hicon)
+        _user32.DestroyIcon(hicon_handle)
 
 
 def _extract_hicon(path_or_name: str, small: bool = True) -> int | None:
@@ -147,10 +180,7 @@ def get_pil_icon(path_or_name: str, size: tuple[int, int] = ICON_SMALL) -> Image
     hicon = _extract_hicon(path_or_name, small=size[0] <= 20)
     if not hicon:
         return None
-    try:
-        return _hicon_to_pil(hicon, size)
-    finally:
-        _user32.DestroyIcon(hicon)
+    return _hicon_to_pil(hicon, size)
 
 
 def get_ctk_image(path_or_name: str, size: tuple[int, int] = ICON_SMALL):
