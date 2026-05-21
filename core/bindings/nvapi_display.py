@@ -65,6 +65,16 @@ def vibrance_percent_to_level(info: NV_DISPLAY_DVC_INFO, percent: float) -> int:
     return min(info.maxLevel, info.minLevel + int(round(span * ratio)))
 
 
+def vibrance_level_to_percent(info: NV_DISPLAY_DVC_INFO, level: int) -> float:
+    """Convert NVAPI level to 0–100% for UI storage."""
+    span = info.maxLevel - info.minLevel
+    if span <= 0:
+        return 50.0
+    clamped = max(info.minLevel, min(info.maxLevel, level))
+    ratio = (clamped - info.minLevel) / span
+    return max(0.0, min(100.0, ratio * 100.0))
+
+
 class NvApiDisplaySession:
     """Long-lived NVAPI session (DVC + Hue)."""
 
