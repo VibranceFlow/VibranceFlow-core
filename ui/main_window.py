@@ -73,6 +73,7 @@ class LuminaSyncWindow(ctk.CTk):
         self._sync_desktop_sliders()
         self._hide_profile_panel()
         self._update_status()
+        self._ctx.on_ui_sync(self._sync_from_context)
 
         self.protocol("WM_DELETE_WINDOW", self._on_close_attempt)
         self.bind("<Unmap>", self._on_unmap)
@@ -93,7 +94,7 @@ class LuminaSyncWindow(ctk.CTk):
         if start_hidden:
             self.withdraw()
         else:
-            self.after(2000, self._status_tick)
+            self.after(1500, self._status_tick)
 
     def _build_header(self) -> None:
         header = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=0, height=44)
@@ -143,6 +144,21 @@ class LuminaSyncWindow(ctk.CTk):
         self._chk_autostart.pack(side="left")
         if s.autostart or self._ctx.sync_autostart_checkbox():
             self._chk_autostart.select()
+
+        row_keep = ctk.CTkFrame(box, fg_color="transparent")
+        row_keep.pack(fill="x", padx=8, pady=(0, 6))
+        self._chk_keep_port = ctk.CTkCheckBox(
+            row_keep,
+            text="Keep remote port open (8765)",
+            width=200,
+            font=FONT_SMALL,
+            fg_color=ACCENT,
+            height=22,
+            command=self._on_keep_port_toggle,
+        )
+        self._chk_keep_port.pack(side="left")
+        self._updating_keep_port = False
+        self._sync_keep_port_checkbox()
 
         ctk.CTkButton(
             row,
@@ -397,6 +413,17 @@ class LuminaSyncWindow(ctk.CTk):
 
     def _on_pair_mobile(self) -> None:
         try:
+            if self._ctx.remote_is_running and self._ctx.remote_client_count > 0:
+                if messagebox.askyesno(
+                    "Pair Mobile",
+                    "A phone is already connected.\n\n"
+                    "Disconnect it and show a new QR / pairing code?\n"
+                    "(The phone must scan the new QR or enter the new code.)",
+                    parent=self,
+                ):
+                    self._ctx.disconnect_remote_clients(rotate_key=True)
+            if not self._ctx.remote_is_running:
+                self._ctx.ensure_remote_server()
             PairingDialog(self, self._ctx)
         except Exception as e:
             messagebox.showerror("Pair Mobile", str(e), parent=self)
@@ -451,6 +478,62 @@ class LuminaSyncWindow(ctk.CTk):
         self._ctx.set_autostart(enabled)
         self._ctx.update_desktop_settings(autostart=enabled)
 
+    def _on_keep_port_toggle(self) -> None:
+        if self._updating_keep_port:
+            return
+        self._ctx.set_keep_remote_port_open(self._chk_keep_port.get() == 1)
+
+    def _sync_keep_port_checkbox(self) -> None:
+        running = self._ctx.remote_is_running
+        checked = self._chk_keep_port.get() == 1
+        if running == checked:
+            return
+        self._updating_keep_port = True
+        if running:
+            self._chk_keep_port.select()
+        else:
+            self._chk_keep_port.deselect()
+        self._updating_keep_port = False
+
+    def _sync_from_context(self) -> None:
+        """Refresh controls after remote edits or profiles.json changes."""
+        if self._ctx.profiles.reload_if_stale():
+            self._ctx.engine.reload_profiles()
+
+        known = set(self._program_buttons.keys())
+        current = set(self._ctx.profiles.list_executables())
+        if known != current:
+            self._refresh_program_grid()
+
+        active = self._ctx.engine.active_executable
+        if active and active in self._ctx.profiles.list_executables():
+            if self._selected_exe != active:
+                self._select_program(active)
+            elif self._selected_exe == active:
+                profile = self._ctx.profiles.get(active)
+                if profile:
+                    self._updating_sliders = True
+                    self._slider_vars["vibrance"].set(profile.vibrance)
+                    self._slider_vars["brightness"].set(profile.brightness)
+                    self._slider_vars["contrast"].set(profile.contrast)
+                    self._slider_vars["gamma"].set(profile.gamma)
+                    self._slider_vars["hue"].set(profile.hue)
+                    self._updating_sliders = False
+                    self._refresh_slider_labels()
+        elif self._selected_exe and self._selected_exe not in current:
+            self._clear_program_selection()
+
+        obs = self._ctx.profiles.settings.observer_enabled
+        want = 1 if obs else 0
+        if self._chk_observer.get() != want:
+            if obs:
+                self._chk_observer.select()
+            else:
+                self._chk_observer.deselect()
+
+        self._update_status()
+        self._sync_keep_port_checkbox()
+
     def _on_add_running(self) -> None:
         existing = set(self._ctx.profiles.list_executables())
 
@@ -491,8 +574,8 @@ class LuminaSyncWindow(ctk.CTk):
 
     def _status_tick(self) -> None:
         if self._visible and not self._quitting:
-            self._update_status()
-            self.after(2000, self._status_tick)
+            self._sync_from_context()
+            self.after(1500, self._status_tick)
 
     def _hide_to_tray(self) -> None:
         self._visible = False
@@ -505,7 +588,7 @@ class LuminaSyncWindow(ctk.CTk):
         self.lift()
         self.focus_force()
         if not self._quitting:
-            self.after(2000, self._status_tick)
+            self.after(1500, self._status_tick)
 
     def _on_close_attempt(self) -> None:
         self._quit_app()

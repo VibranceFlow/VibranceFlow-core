@@ -64,9 +64,7 @@ class RemoteCommandHandler:
                 return build_response(ok=True, msg_id=msg_id, state=self._get_state())
 
             if cmd == "set_observer":
-                enabled = payload.get("enabled")
-                if not isinstance(enabled, bool):
-                    raise ProtocolError("enabled must be boolean")
+                enabled = _as_bool(payload.get("enabled"), field="enabled")
                 self._set_observer(enabled)
                 return build_response(ok=True, msg_id=msg_id, state=self._get_state())
 
@@ -83,6 +81,14 @@ class RemoteCommandHandler:
         except Exception as e:
             logger.exception("remote command failed: %s", cmd)
             return build_response(ok=False, msg_id=msg_id, error="internal error")
+
+
+def _as_bool(value: Any, *, field: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and value in (0, 1):
+        return bool(value)
+    raise ProtocolError(f"{field} must be boolean")
 
 
 def _profile_from_payload(payload: dict[str, Any]) -> ColorProfile:

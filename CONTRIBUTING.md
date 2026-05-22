@@ -29,7 +29,8 @@ Thanks for taking the time to contribute.
 |------|------|
 | `core/` | Engine, profiles, foreground window monitor |
 | `core/bindings/` | GDI32 / NVAPI via ctypes |
-| `ui/` | CustomTkinter GUI, tray, process picker |
+| `core/remote/` | LAN WebSocket server, Fernet, PIN pairing, firewall helper |
+| `ui/` | CustomTkinter GUI, tray, process picker, Pair Mobile dialog |
 | `gui_main.py` | GUI entry point |
 | `main.py` | CLI entry point |
 

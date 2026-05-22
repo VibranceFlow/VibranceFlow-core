@@ -19,7 +19,13 @@ from core.remote.crypto import decrypt_json, encrypt_json  # noqa: E402
 
 def _load_pairing(path: str | None, args: argparse.Namespace) -> tuple[str, int, str]:
     if path:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        p = Path(path)
+        if not p.is_file():
+            raise SystemExit(
+                f"Pairing file not found: {p.resolve()}\n"
+                "In LuminaSync GUI open Pair Mobile → Copy JSON → save as pairing.json in this folder."
+            )
+        data = json.loads(p.read_text(encoding="utf-8"))
         return data["host"], int(data["port"]), data["key"]
     if args.host and args.port and args.key:
         return args.host, int(args.port), args.key

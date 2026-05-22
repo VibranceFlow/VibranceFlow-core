@@ -60,6 +60,7 @@ class AppSettings:
     observer_enabled: bool = True
     affect_primary_only: bool = False
     autostart: bool = False
+    keep_remote_port_open: bool = False
 
     def desktop_profile(self) -> ColorProfile:
         return ColorProfile(
@@ -83,6 +84,7 @@ class AppSettings:
             observer_enabled=bool(data.get("observer_enabled", True)),
             affect_primary_only=bool(data.get("affect_primary_only", False)),
             autostart=bool(data.get("autostart", False)),
+            keep_remote_port_open=bool(data.get("keep_remote_port_open", False)),
         )
 
     def to_dict(self) -> dict:
@@ -95,4 +97,5 @@ class AppSettings:
             "observer_enabled": self.observer_enabled,
             "affect_primary_only": self.affect_primary_only,
             "autostart": self.autostart,
+            "keep_remote_port_open": self.keep_remote_port_open,
         }

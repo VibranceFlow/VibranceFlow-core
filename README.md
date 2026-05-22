@@ -10,7 +10,7 @@ Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
 |------------|---------|
 | [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core) | Windows engine + GUI (this repo) |
 | [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC) | Validation scripts, architecture notes, experiments |
-| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Mobile remote control (planned) |
+| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Android/iOS remote (Expo, LAN WebSocket) |
 | [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Site on Vercel (planned) |
 
 ## Requirements
@@ -48,7 +48,8 @@ python gui_main.py
 - **Add** — running process list with icon preview on selection
 - **Manual** — pick a `.exe` from disk
 - Color sliders appear only after selecting a program; **Reset** restores that program’s profile to GPU defaults captured at startup
-- **Pair Mobile** — LAN WebSocket + QR (Fernet-encrypted); server stays on until you quit the app
+- **Pair Mobile** — LAN IP + 6-digit code or QR (Fernet); optional **Keep remote port open (8765)** in settings
+- PC UI syncs when the phone changes profiles; `get_state` includes saved `programs[]` for the mobile app
 - **Minimize** → system tray (double-click the icon to open; **Quit** in the menu exits)
 - **Close (X)** → exits the application
 - **Start with Windows** → Run registry entry with `--tray` (starts minimized to tray)

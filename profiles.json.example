@@ -8,7 +8,8 @@
     "desktop_hue": 0,
     "observer_enabled": true,
     "affect_primary_only": false,
-    "autostart": false
+    "autostart": false,
+    "keep_remote_port_open": false
   },
   "profiles": {
     "Gw2-64.exe": {
