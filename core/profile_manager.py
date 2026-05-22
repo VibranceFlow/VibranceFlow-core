@@ -26,6 +26,7 @@ class ProfileManager:
         self._path = path or default_profiles_path()
         self._profiles: dict[str, ColorProfile] = {}
         self._settings = AppSettings()
+        self._file_mtime: float = 0.0
         self._load()
 
     @property
@@ -35,8 +36,10 @@ class ProfileManager:
     def _load(self) -> None:
         if not self._path.exists():
             self._profiles = {}
+            self._file_mtime = 0.0
             return
         try:
+            self._file_mtime = self._path.stat().st_mtime
             raw = json.loads(self._path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError) as e:
             logger.error("Failed to read %s: %s", self._path, e)
@@ -68,6 +71,21 @@ class ProfileManager:
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
+        if self._path.exists():
+            self._file_mtime = self._path.stat().st_mtime
+
+    def reload_if_stale(self) -> bool:
+        """Reload profiles.json when another writer (or remote) changed it on disk."""
+        if not self._path.exists():
+            return False
+        try:
+            mtime = self._path.stat().st_mtime
+        except OSError:
+            return False
+        if mtime <= self._file_mtime + 1e-6:
+            return False
+        self._load()
+        return True
 
     def get(self, exe_name: str) -> ColorProfile | None:
         if not exe_name:

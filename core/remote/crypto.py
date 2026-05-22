@@ -17,6 +17,15 @@ def _fernet(key: str) -> Fernet:
     return Fernet(key.encode("ascii"))
 
 
+def _b64url_decode(wire: str) -> bytes:
+    """Accept frames from mobile (padding optional) or Python (padded)."""
+    s = wire.strip()
+    pad = (-len(s)) % 4
+    if pad:
+        s += "=" * pad
+    return base64.urlsafe_b64decode(s.encode("ascii"))
+
+
 def encrypt_json(key: str, plaintext: str) -> str:
     token = _fernet(key).encrypt(plaintext.encode("utf-8"))
     return base64.urlsafe_b64encode(token).decode("ascii")
@@ -24,7 +33,7 @@ def encrypt_json(key: str, plaintext: str) -> str:
 
 def decrypt_json(key: str, ciphertext_b64: str) -> str:
     try:
-        raw = base64.urlsafe_b64decode(ciphertext_b64.encode("ascii"))
+        raw = _b64url_decode(ciphertext_b64)
         return _fernet(key).decrypt(raw).decode("utf-8")
     except (InvalidToken, ValueError) as e:
         raise ValueError("decrypt failed") from e
