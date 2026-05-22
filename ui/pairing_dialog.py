@@ -141,7 +141,7 @@ class PairingDialog(ctk.CTkToplevel):
 
             box,
 
-            text="Pair LuminaSync Mobile",
+            text="Pair VibranceFlow Mobile",
 
             font=("Segoe UI", 15, "bold"),
 

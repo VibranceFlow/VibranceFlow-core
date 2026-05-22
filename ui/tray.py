@@ -23,10 +23,10 @@ class TrayController:
         import pystray
 
         menu = pystray.Menu(
-            pystray.MenuItem("Open LuminaSync", self._handle_show, default=True),
+            pystray.MenuItem("Open VibranceFlow", self._handle_show, default=True),
             pystray.MenuItem("Quit", self._handle_quit),
         )
-        self._icon = pystray.Icon("LuminaSync", load_tray_image(), "LuminaSync", menu)
+        self._icon = pystray.Icon("VibranceFlow", load_tray_image(), "VibranceFlow", menu)
 
         def _run() -> None:
             assert self._icon is not None

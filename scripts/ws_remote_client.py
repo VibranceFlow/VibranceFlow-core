@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test LuminaSync remote WebSocket API without the mobile app."""
+"""Test VibranceFlow remote WebSocket API without the mobile app."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def _load_pairing(path: str | None, args: argparse.Namespace) -> tuple[str, int,
         if not p.is_file():
             raise SystemExit(
                 f"Pairing file not found: {p.resolve()}\n"
-                "In LuminaSync GUI open Pair Mobile → Copy JSON → save as pairing.json in this folder."
+                "In VibranceFlow GUI open Pair Mobile → Copy JSON → save as pairing.json in this folder."
             )
         data = json.loads(p.read_text(encoding="utf-8"))
         return data["host"], int(data["port"]), data["key"]
@@ -112,7 +112,7 @@ async def run_interactive(host: str, port: int, key: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="LuminaSync remote WebSocket test client")
+    parser = argparse.ArgumentParser(description="VibranceFlow remote WebSocket test client")
     parser.add_argument("--pairing", help="JSON file from QR / Copy JSON")
     parser.add_argument("--host")
     parser.add_argument("--port", type=int)

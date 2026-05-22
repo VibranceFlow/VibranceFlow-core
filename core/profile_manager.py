@@ -1,4 +1,4 @@
-"""Profile persistence at %APPDATA%/LuminaSync/profiles.json."""
+"""Profile persistence at %APPDATA%/VibranceFlow/profiles.json."""
 
 from __future__ import annotations
 
@@ -18,7 +18,13 @@ def default_profiles_path() -> Path:
     appdata = os.environ.get("APPDATA")
     if not appdata:
         raise OSError("APPDATA environment variable is not set.")
-    return Path(appdata) / "LuminaSync" / "profiles.json"
+    vibrance = Path(appdata) / "VibranceFlow" / "profiles.json"
+    legacy = Path(appdata) / "LuminaSync" / "profiles.json"
+    if vibrance.exists():
+        return vibrance
+    if legacy.exists():
+        return legacy
+    return vibrance
 
 
 class ProfileManager:

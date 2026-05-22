@@ -1,10 +1,10 @@
-# Contributing to LuminaSync Core
+# Contributing to VibranceFlow Core
 
 Thanks for taking the time to contribute.
 
 ## Setup
 
-1. Fork and clone [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core).
+1. Fork and clone [VibranceFlow-core](https://github.com/VibranceFlow/VibranceFlow-core).
 2. Use **Python 3.11+ 64-bit** on Windows 11.
 3. Install dependencies:
 
@@ -17,8 +17,8 @@ Thanks for taking the time to contribute.
 4. Copy the example profile:
 
    ```powershell
-   mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
-   copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
+   mkdir "$env:APPDATA\VibranceFlow" -ErrorAction SilentlyContinue
+   copy profiles.json.example "$env:APPDATA\VibranceFlow\profiles.json"
    ```
 
 5. Run `python gui_main.py` (GUI) or `python main.py` (CLI engine).
@@ -34,7 +34,7 @@ Thanks for taking the time to contribute.
 | `gui_main.py` | GUI entry point |
 | `main.py` | CLI entry point |
 
-Architecture write-ups, PoC scripts, and platform experiments are maintained in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC).
+Architecture write-ups, PoC scripts, and platform experiments are maintained in [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC).
 
 ## Guidelines
 
@@ -66,10 +66,10 @@ Please include:
 
 | Repo | Role |
 |------|------|
-| [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC) | Docs and validation scripts |
-| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Mobile control (planned) |
-| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Web site (planned) |
+| [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC) | Docs and validation scripts |
+| [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile) | Mobile control (planned) |
+| [VibranceFlow-web](https://github.com/VibranceFlow/VibranceFlow-web) | Web site (planned) |
 
 ## Questions
 
-Open an issue or discussion on [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core).
+Open an issue or discussion on [VibranceFlow-core](https://github.com/VibranceFlow/VibranceFlow-core).

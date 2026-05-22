@@ -1,1 +1,1 @@
-"""Interface gráfica LuminaSync."""
+"""Interface gráfica VibranceFlow."""

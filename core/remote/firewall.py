@@ -15,7 +15,7 @@ _APP_RULE_ADDED = False
 
 
 def _rule_name(port: int) -> str:
-    return f"LuminaSync Remote TCP {port}"
+    return f"VibranceFlow Remote TCP {port}"
 
 
 def _rule_exists(port: int) -> bool:
@@ -73,7 +73,7 @@ def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
         logger.warning("firewall add rule failed: %s", e)
         return (
             "Could not add a firewall rule automatically. "
-            f"Allow LuminaSync (TCP {port}) on private networks in Windows Firewall."
+            f"Allow VibranceFlow (TCP {port}) on private networks in Windows Firewall."
         )
 
     if r.returncode != 0:
@@ -82,11 +82,11 @@ def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
         if "access is denied" in err.lower() or "elevação" in err.lower() or "elevation" in err.lower():
             return (
                 "Firewall change needs administrator approval. "
-                f"Allow inbound TCP port {port} for LuminaSync on private networks."
+                f"Allow inbound TCP port {port} for VibranceFlow on private networks."
             )
         return (
             f"Firewall rule was not added (TCP {port}). "
-            "Allow LuminaSync on private networks if the phone cannot connect."
+            "Allow VibranceFlow on private networks if the phone cannot connect."
         )
 
     _RULES_ADDED.add(port)
@@ -99,7 +99,7 @@ def _try_add_app_rule(exe: str) -> None:
     global _APP_RULE_ADDED
     if _APP_RULE_ADDED or sys.platform != "win32":
         return
-    app_name = "LuminaSync Python"
+    app_name = "VibranceFlow Python"
     try:
         r = subprocess.run(
             [

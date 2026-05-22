@@ -1,17 +1,17 @@
-# LuminaSync Core
+# VibranceFlow Core
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
 Windows desktop app that applies per-game color profiles (vibrance, brightness, contrast, gamma, hue) when a configured executable is in focus, and restores desktop settings when you switch away.
 
-Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
+Part of the [VibranceFlow](https://github.com/VibranceFlow) open-source ecosystem:
 
 | Repository | Purpose |
 |------------|---------|
-| [LuminaSync-core](https://github.com/LuminaSync/LuminaSync-core) | Windows engine + GUI (this repo) |
-| [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC) | Validation scripts, architecture notes, experiments |
-| [LuminaSync-mobile](https://github.com/LuminaSync/LuminaSync-mobile) | Android/iOS remote (Expo, LAN WebSocket) |
-| [LuminaSync-web](https://github.com/LuminaSync/LuminaSync-web) | Site on Vercel (planned) |
+| [VibranceFlow-core](https://github.com/VibranceFlow/VibranceFlow-core) | Windows engine + GUI (this repo) |
+| [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC) | Validation scripts, architecture notes, experiments |
+| [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile) | Android/iOS remote (Expo, LAN WebSocket) |
+| [VibranceFlow-web](https://github.com/VibranceFlow/VibranceFlow-web) | Site on Vercel (planned) |
 
 ## Requirements
 
@@ -24,10 +24,10 @@ Part of the [LuminaSync](https://github.com/LuminaSync) open-source ecosystem:
 ### Poetry (recommended)
 
 ```powershell
-cd path\to\LuminaSync-core
+cd path\to\VibranceFlow-core
 poetry install
-mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
-copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
+mkdir "$env:APPDATA\VibranceFlow" -ErrorAction SilentlyContinue
+copy profiles.json.example "$env:APPDATA\VibranceFlow\profiles.json"
 poetry run python gui_main.py
 ```
 
@@ -35,8 +35,8 @@ poetry run python gui_main.py
 
 ```powershell
 pip install -r requirements.txt
-mkdir "$env:APPDATA\LuminaSync" -ErrorAction SilentlyContinue
-copy profiles.json.example "$env:APPDATA\LuminaSync\profiles.json"
+mkdir "$env:APPDATA\VibranceFlow" -ErrorAction SilentlyContinue
+copy profiles.json.example "$env:APPDATA\VibranceFlow\profiles.json"
 ```
 
 ### GUI (recommended)
@@ -76,7 +76,7 @@ NVIDIA Control Panel–style units:
 | `gamma` | 0.4–2.8 |
 | `hue` | degrees 0–359 (optional) |
 
-Stored at `%APPDATA%\LuminaSync\profiles.json` (see `profiles.json.example`).
+Stored at `%APPDATA%\VibranceFlow\profiles.json` (see `profiles.json.example`).
 
 ## How it works
 
@@ -109,9 +109,9 @@ poetry run python scripts/ws_remote_client.py --pairing pairing.json --demo
 
 Or pass `--host`, `--port`, and `--key` from the JSON. Interactive mode omits `--demo`.
 
-Allow LuminaSync through the Windows firewall on **private** networks when prompted.
+Allow VibranceFlow through the Windows firewall on **private** networks when prompted.
 
-Deeper design notes and Win11/NVAPI validation live in [LuminaSync-PoC](https://github.com/LuminaSync/LuminaSync-PoC). Packaging: [packaging/README.md](packaging/README.md).
+Deeper design notes and Win11/NVAPI validation live in [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC). Packaging: [packaging/README.md](packaging/README.md).
 
 ## Contributing
 

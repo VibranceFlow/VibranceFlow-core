@@ -1,4 +1,4 @@
-"""LuminaSync data models."""
+"""VibranceFlow data models."""
 
 from __future__ import annotations
 

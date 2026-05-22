@@ -1,4 +1,4 @@
-# Build LuminaSync Windows executable with Nuitka (requires Poetry + packaging group).
+# Build VibranceFlow Windows executable with Nuitka (requires Poetry + packaging group).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
@@ -13,7 +13,7 @@ poetry run python -m nuitka `
   --onefile `
   --assume-yes-for-downloads `
   --output-dir=dist `
-  --output-filename=LuminaSync `
+  --output-filename=VibranceFlow `
   --include-package=core `
   --include-package=ui `
   --include-package=customtkinter `
@@ -23,4 +23,4 @@ poetry run python -m nuitka `
   @IconArg `
   gui_main.py
 
-Write-Host "Build finished. See dist\LuminaSync.exe"
+Write-Host "Build finished. See dist\VibranceFlow.exe"

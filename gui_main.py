@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LuminaSync — graphical user interface entry point."""
+"""VibranceFlow — graphical user interface entry point."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 
 from ui.app_context import LuminaAppContext
-from ui.main_window import LuminaSyncWindow
+from ui.main_window import VibranceFlowWindow
 
 
 def main() -> int:
@@ -22,10 +22,10 @@ def main() -> int:
     try:
         ctx = LuminaAppContext()
     except Exception as e:
-        print(f"Failed to start LuminaSync: {e}", file=sys.stderr)
+        print(f"Failed to start VibranceFlow: {e}", file=sys.stderr)
         return 1
 
-    app = LuminaSyncWindow(ctx, start_hidden=start_hidden)
+    app = VibranceFlowWindow(ctx, start_hidden=start_hidden)
     ctx.attach_ui_scheduler(lambda fn, delay=0: app.after(delay, fn))
     app.mainloop()
     return 0

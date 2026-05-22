@@ -6,7 +6,7 @@ import os
 import sys
 import winreg
 
-APP_NAME = "LuminaSync"
+APP_NAME = "VibranceFlow"
 
 
 def _launch_command() -> str:
