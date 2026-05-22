@@ -1,4 +1,4 @@
-"""LuminaSync visual theme palette."""
+"""VibranceFlow visual theme palette."""
 
 # Background and surfaces
 BG_DARK = "#0a0a0f"

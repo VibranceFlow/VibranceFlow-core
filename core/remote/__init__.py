@@ -1,4 +1,4 @@
-"""LAN WebSocket remote control for LuminaSync mobile."""
+"""LAN WebSocket remote control for VibranceFlow mobile."""
 
 from core.remote.server import RemoteServer
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LuminaSync — CLI engine entry point (no GUI)."""
+"""VibranceFlow — CLI engine entry point (no GUI)."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def main() -> int:
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, _signal_handler)
 
-    logger.info("LuminaSync running. Press Ctrl+C to exit.")
+    logger.info("VibranceFlow running. Press Ctrl+C to exit.")
     engine.start()
 
     import time

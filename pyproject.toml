@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "luminasync-core"
+name = "VibranceFlow-core"
 version = "0.1.0"
 description = "Windows per-game color profiles with optional mobile remote control"
-authors = ["LuminaSync"]
+authors = ["VibranceFlow"]
 readme = "README.md"
 license = "GPL-3.0-only"
 packages = [{ include = "core" }, { include = "ui" }]
@@ -23,8 +23,8 @@ optional = true
 nuitka = ">=2.0.0"
 
 [tool.poetry.scripts]
-luminasync-gui = "gui_main:main"
-luminasync = "main:main"
+VibranceFlow-gui = "gui_main:main"
+VibranceFlow = "main:main"
 
 [build-system]
 requires = ["poetry-core>=1.8.0"]

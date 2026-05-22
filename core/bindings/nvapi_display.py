@@ -94,7 +94,7 @@ class NvApiDisplaySession:
 
     def open(self) -> None:
         if struct_bits() != 64:
-            raise RuntimeError("LuminaSync requires 64-bit Python (nvapi64.dll).")
+            raise RuntimeError("VibranceFlow requires 64-bit Python (nvapi64.dll).")
         for path in ("nvapi64", "nvapi"):
             try:
                 self._dll = WinDLL(path)

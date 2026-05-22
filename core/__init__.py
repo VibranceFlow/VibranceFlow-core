@@ -1,4 +1,4 @@
-"""LuminaSync core — per-executable color profile engine."""
+"""VibranceFlow core — per-executable color profile engine."""
 
 from core.display_manager import WindowsDisplayManager
 from core.engine import LuminaEngine

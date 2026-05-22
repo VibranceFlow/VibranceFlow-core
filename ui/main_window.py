@@ -1,4 +1,4 @@
-"""LuminaSync main window — compact layout."""
+"""VibranceFlow main window — compact layout."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 
-class LuminaSyncWindow(ctk.CTk):
+class VibranceFlowWindow(ctk.CTk):
     def __init__(self, ctx: LuminaAppContext, *, start_hidden: bool = False) -> None:
         super().__init__()
         self._ctx = ctx
@@ -48,7 +48,7 @@ class LuminaSyncWindow(ctk.CTk):
         self._size_compact, self._size_expanded = compute_window_sizes(sw, sh)
         self._expanded = False
 
-        self.title("LuminaSync")
+        self.title("VibranceFlow")
         self.configure(fg_color=BG_DARK)
         cw, ch = self._size_compact
         ew, eh = self._size_expanded
@@ -106,7 +106,7 @@ class LuminaSyncWindow(ctk.CTk):
             ctk.CTkLabel(header, image=logo, text="").pack(side="left", padx=(12, 4), pady=8)
         ctk.CTkLabel(
             header,
-            text="LuminaSync",
+            text="VibranceFlow",
             font=("Segoe UI", 16, "bold"),
             text_color=ACCENT,
         ).pack(side="left", padx=(0, 8), pady=8)
@@ -580,7 +580,7 @@ class LuminaSyncWindow(ctk.CTk):
     def _hide_to_tray(self) -> None:
         self._visible = False
         self.withdraw()
-        self._tray.notify("LuminaSync", "Running in the tray. Double-click the icon to open.")
+        self._tray.notify("VibranceFlow", "Running in the tray. Double-click the icon to open.")
 
     def _show_from_tray(self) -> None:
         self._visible = True
