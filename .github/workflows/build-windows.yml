@@ -37,7 +37,7 @@ jobs:
         run: |
           poetry run python -m nuitka `
             --onefile `
-            --windows-disable-console `
+            --windows-console-mode=disable `
             --assume-yes-for-downloads `
             --output-dir=dist `
             --output-filename=VibranceFlow `
