@@ -20,6 +20,8 @@ poetry run python -m nuitka `
   --include-package=websockets `
   --include-package=cryptography `
   --include-package=qrcode `
+  --include-package=pycaw `
+  --include-package=comtypes `
   @IconArg `
   gui_main.py
 

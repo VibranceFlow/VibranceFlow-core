@@ -32,7 +32,7 @@ from ui.theme import ACCENT, BG_CARD, BG_DARK, FONT_SMALL, TEXT_MUTED, TEXT_PRIM
 
 _DIALOG_W = 400
 
-_DIALOG_H = 680
+_DIALOG_H = 640
 
 _QR_PX = 200
 
@@ -108,18 +108,20 @@ class PairingDialog(ctk.CTkToplevel):
 
 
     def _center(self, parent: ctk.CTk) -> None:
-
         self.update_idletasks()
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        max_h = max(520, min(_DIALOG_H, sh - 80))
+        max_w = min(_DIALOG_W, sw - 40)
 
         pw, ph = parent.winfo_width(), parent.winfo_height()
-
         px, py = parent.winfo_rootx(), parent.winfo_rooty()
+        x = max(12, min(px + max(0, (pw - max_w) // 2), sw - max_w - 12))
+        y = max(12, min(py + max(0, (ph - max_h) // 2), sh - max_h - 56))
 
-        x = px + max(0, (pw - _DIALOG_W) // 2)
-
-        y = py + max(0, (ph - _DIALOG_H) // 2)
-
-        self.geometry(f"{_DIALOG_W}x{_DIALOG_H}+{x}+{y}")
+        self.geometry(f"{max_w}x{max_h}+{x}+{y}")
+        self.minsize(max_w, max_h)
+        self.maxsize(max_w, max_h)
 
 
 

@@ -10,7 +10,7 @@ from core.remote.pairing import PROTOCOL_VERSION
 MAX_JSON_BYTES = 8192
 
 ALLOWED_COMMANDS = frozenset(
-    {"ping", "get_state", "set_sliders", "set_observer", "reset_profile"}
+    {"ping", "get_state", "set_sliders", "set_audio", "set_observer", "reset_profile"}
 )
 
 

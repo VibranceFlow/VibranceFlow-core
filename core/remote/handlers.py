@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from core.models import ColorProfile
+from core.models import AudioSettings, ColorProfile
 from core.remote.protocol import ProtocolError, build_response, parse_request
 
 logger = logging.getLogger(__name__)
@@ -21,11 +21,13 @@ class RemoteCommandHandler:
         *,
         get_state: Callable[[], dict[str, Any]],
         set_sliders: Callable[[ColorProfile, str | None], None],
+        set_audio: Callable[[AudioSettings, str | None], None],
         set_observer: Callable[[bool], None],
         reset_profile: Callable[[str | None], None],
     ) -> None:
         self._get_state = get_state
         self._set_sliders = set_sliders
+        self._set_audio = set_audio
         self._set_observer = set_observer
         self._reset_profile = reset_profile
         self._last_msg_at = 0.0
@@ -61,6 +63,14 @@ class RemoteCommandHandler:
                 if target is not None and not isinstance(target, str):
                     raise ProtocolError("exe must be string")
                 self._set_sliders(profile, target)
+                return build_response(ok=True, msg_id=msg_id, state=self._get_state())
+
+            if cmd == "set_audio":
+                audio = _audio_from_payload(payload)
+                target = payload.get("exe")
+                if target is not None and not isinstance(target, str):
+                    raise ProtocolError("exe must be string")
+                self._set_audio(audio, target)
                 return build_response(ok=True, msg_id=msg_id, state=self._get_state())
 
             if cmd == "set_observer":
@@ -106,3 +116,18 @@ def _profile_from_payload(payload: dict[str, Any]) -> ColorProfile:
         )
     except (TypeError, ValueError) as e:
         raise ProtocolError("invalid slider values") from e
+
+
+def _audio_from_payload(payload: dict[str, Any]) -> AudioSettings:
+    has_volume = "volume" in payload
+    has_muted = "muted" in payload
+    if not has_volume and not has_muted:
+        raise ProtocolError("missing audio fields")
+    try:
+        volume = None if not has_volume else max(0.0, min(100.0, float(payload["volume"])))
+    except (TypeError, ValueError) as e:
+        raise ProtocolError("invalid audio volume") from e
+    muted = None
+    if has_muted:
+        muted = _as_bool(payload.get("muted"), field="muted")
+    return AudioSettings(volume=volume, muted=muted)

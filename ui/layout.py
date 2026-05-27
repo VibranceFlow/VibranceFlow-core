@@ -7,7 +7,7 @@ def compute_window_sizes(screen_w: int, screen_h: int) -> tuple[tuple[int, int],
     """Return (compact_w, compact_h), (expanded_w, expanded_h)."""
     compact_w = max(480, min(640, int(screen_w * 0.38)))
     compact_h = max(320, min(420, int(screen_h * 0.42)))
-    expanded_h = min(compact_h + 180, int(screen_h * 0.65))
+    expanded_h = max(560, min(compact_h + 260, int(screen_h * 0.78)))
     return (compact_w, compact_h), (compact_w, expanded_h)
 
 

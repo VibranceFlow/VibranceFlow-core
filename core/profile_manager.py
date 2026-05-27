@@ -11,7 +11,7 @@ from core.models import AppSettings, ColorProfile
 
 logger = logging.getLogger(__name__)
 
-PROFILE_VERSION = 1
+PROFILE_VERSION = 2
 
 
 def default_profiles_path() -> Path:
@@ -71,7 +71,7 @@ class ProfileManager:
         payload = {
             "version": PROFILE_VERSION,
             "settings": self._settings.to_dict(),
-            "profiles": {exe: p.to_dict() for exe, p in self._profiles.items()},
+            "profiles": {exe: p.to_storage_dict() for exe, p in self._profiles.items()},
         }
         self._path.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n",

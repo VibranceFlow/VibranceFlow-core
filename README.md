@@ -2,120 +2,62 @@
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-Windows desktop app that applies per-game color profiles (vibrance, brightness, contrast, gamma, hue) when a configured executable is in focus, and restores desktop settings when you switch away.
+VibranceFlow Core is the Windows desktop app for game-based color profiles and local mobile pairing.
 
-Part of the [VibranceFlow](https://github.com/VibranceFlow) open-source ecosystem:
+## Release 1.0 scope
 
-| Repository | Purpose |
-|------------|---------|
-| [VibranceFlow-core](https://github.com/VibranceFlow/VibranceFlow-core) | Windows engine + GUI (this repo) |
-| [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC) | Validation scripts, architecture notes, experiments |
-| [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile) | Android/iOS remote (Expo, LAN WebSocket) |
-| [VibranceFlow-web](https://github.com/VibranceFlow/VibranceFlow-web) | Site on Vercel (planned) |
+- Supported desktop platform: **Windows 11**
+- Public build format: **single-file `.exe`**
+- Mobile companion for this release: **Android APK** (from `VibranceFlow-mobile`)
 
-## Requirements
+## Download and install (Windows)
 
-- Windows 11
-- Python 3.11+ **64-bit**
-- NVIDIA desktop GPU with Digital Vibrance in the driver (optional; GDI works without NVAPI)
+1. Open the repository **Releases** page.
+2. Download the latest `VibranceFlow.exe` artifact.
+3. Place it in any folder (for example `C:\Program Files\VibranceFlow\`).
+4. Run `VibranceFlow.exe`.
 
-## Quick start
+If Windows SmartScreen appears, choose **More info** and run only when the release is from the official repository.
 
-### Poetry (recommended)
+## First run
 
-```powershell
-cd path\to\VibranceFlow-core
-poetry install
-mkdir "$env:APPDATA\VibranceFlow" -ErrorAction SilentlyContinue
-copy profiles.json.example "$env:APPDATA\VibranceFlow\profiles.json"
-poetry run python gui_main.py
-```
+1. Open VibranceFlow.
+2. Add a game executable from the process list or manually from disk.
+3. Configure sliders (Vibrance, Brightness, Contrast, Gamma, Hue).
+4. Optional: configure per-app audio when a live audio session exists.
+5. Open **Pair Mobile** to connect your Android phone over LAN.
 
-### pip
+## Firewall and LAN pairing
 
-```powershell
-pip install -r requirements.txt
-mkdir "$env:APPDATA\VibranceFlow" -ErrorAction SilentlyContinue
-copy profiles.json.example "$env:APPDATA\VibranceFlow\profiles.json"
-```
+Mobile control uses local WebSocket on port `8765`.
 
-### GUI (recommended)
+When Windows Firewall prompts:
 
-```powershell
-python gui_main.py
-```
+- allow on **Private networks**
+- keep **Public networks** disabled unless you explicitly need it
 
-- **Add** — running process list with icon preview on selection
-- **Manual** — pick a `.exe` from disk
-- Color sliders appear only after selecting a program; **Reset** restores that program’s profile to GPU defaults captured at startup
-- **Pair Mobile** — LAN IP + 6-digit code or QR (Fernet); optional **Keep remote port open (8765)** in settings
-- PC UI syncs when the phone changes profiles; `get_state` includes saved `programs[]` for the mobile app
-- **Minimize** → system tray (double-click the icon to open; **Quit** in the menu exits)
-- **Close (X)** → exits the application
-- **Start with Windows** → Run registry entry with `--tray` (starts minimized to tray)
+Pairing options:
 
-```powershell
-python gui_main.py --tray
-```
+- 6-digit pairing code
+- QR code (recommended)
 
-### CLI engine (no GUI)
+All commands are encrypted end-to-end on LAN using Fernet payload encryption.
 
-```powershell
-python main.py
-```
+## Privacy and security
 
-## Profiles (`profiles.json`)
+- No cloud account is required.
+- No telemetry backend is required for normal use.
+- Pairing keys stay local and can be rotated from the Pair Mobile dialog.
 
-NVIDIA Control Panel–style units:
+## Troubleshooting
 
-| Field | Description |
-|-------|-------------|
-| `vibrance` | 0–100 (%) |
-| `brightness` | offset % (e.g. `42` = +42%) |
-| `contrast` | offset % |
-| `gamma` | 0.4–2.8 |
-| `hue` | degrees 0–359 (optional) |
+- **Mobile cannot connect:** confirm phone and PC are on the same LAN and firewall allows private access.
+- **Audio slider is disabled:** the selected app has no active audio session on the PC.
+- **Profile not switching:** verify Observer is enabled and the executable is saved in the profile list.
 
-Stored at `%APPDATA%\VibranceFlow\profiles.json` (see `profiles.json.example`).
+## For developers
 
-## How it works
-
-A background thread polls the foreground window about once per second. When the executable matches a configured profile, display settings are applied via GDI gamma LUT (brightness, contrast, gamma) and NVAPI (vibrance, hue). Otherwise the desktop profile is applied, or the original baseline is restored if the observer is disabled.
-
-```
-core/
-  bindings/         # GDI32 + NVAPI (ctypes)
-  remote/           # LAN WebSocket + Fernet for mobile
-  display_manager.py
-  profile_manager.py
-  window_monitor.py
-  engine.py
-ui/                 # CustomTkinter GUI + system tray
-scripts/
-  ws_remote_client.py   # test remote API without a phone
-packaging/          # Nuitka / MSIX / AppImage notes
-gui_main.py
-main.py
-```
-
-### Mobile remote testing (no Android app)
-
-1. Open the GUI → **Pair Mobile** → **Copy JSON** (or scan QR later from the mobile app).
-2. In another terminal:
-
-```powershell
-poetry run python scripts/ws_remote_client.py --pairing pairing.json --demo
-```
-
-Or pass `--host`, `--port`, and `--key` from the JSON. Interactive mode omits `--demo`.
-
-Allow VibranceFlow through the Windows firewall on **private** networks when prompted.
-
-Deeper design notes and Win11/NVAPI validation live in [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC). Packaging: [packaging/README.md](packaging/README.md).
-
-## Contributing
-
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Development setup, packaging notes, and contribution rules are documented in [CONTRIBUTING.md](CONTRIBUTING.md) and [packaging/README.md](packaging/README.md).
 
 ## License
 

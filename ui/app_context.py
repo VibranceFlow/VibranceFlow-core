@@ -9,10 +9,11 @@ from typing import Any
 
 from tkinter import filedialog
 
+from core.audio_manager import AudioSnapshot, create_audio_manager
 from core.autostart import is_autostart_enabled, set_autostart
 from core.display_manager import WindowsDisplayManager
 from core.engine import LuminaEngine
-from core.models import AppSettings, ColorProfile
+from core.models import AppSettings, AudioSettings, AudioState, ColorProfile
 from core.profile_manager import ProfileManager
 from core.remote.handlers import RemoteCommandHandler
 from core.remote.protocol import ProtocolError
@@ -34,7 +35,8 @@ class LuminaAppContext:
     def __init__(self) -> None:
         self.profiles = ProfileManager()
         self.display = WindowsDisplayManager()
-        self.engine = LuminaEngine(self.display, self.profiles)
+        self.audio = create_audio_manager()
+        self.engine = LuminaEngine(self.display, self.profiles, audio=self.audio)
         self._schedule_main: Callable[[Callable[[], None]], None] | None = None
         self._remote: RemoteServer | None = None
         self._last_firewall_warning: str | None = None
@@ -93,6 +95,7 @@ class LuminaAppContext:
         self.stop_remote_server()
         if self.engine.is_running:
             self.engine.stop()
+        self.audio.shutdown()
         self.display.shutdown()
 
     @property
@@ -118,6 +121,7 @@ class LuminaAppContext:
             handler = RemoteCommandHandler(
                 get_state=self._remote_get_state,
                 set_sliders=self._remote_set_sliders,
+                set_audio=self._remote_set_audio,
                 set_observer=self.set_observer,
                 reset_profile=self._remote_reset_profile,
             )
@@ -172,12 +176,22 @@ class LuminaAppContext:
             self._notify_ui_sync()
 
     def reset_program_to_gpu_default(self, exe_name: str) -> None:
-        profile = self.display.gpu_default_profile
+        current = self.profiles.get(exe_name)
+        audio = current.audio if current else AudioSettings()
+        profile = ColorProfile(
+            vibrance=self.display.gpu_default_profile.vibrance,
+            brightness=self.display.gpu_default_profile.brightness,
+            contrast=self.display.gpu_default_profile.contrast,
+            gamma=self.display.gpu_default_profile.gamma,
+            hue=self.display.gpu_default_profile.hue,
+            audio=audio,
+        )
         self.profiles.upsert(exe_name, profile)
         self.engine.reload_profiles()
         active = self.engine.active_executable
         if active and active.lower() == exe_name.lower():
             self.display.apply_profile(profile)
+            self.audio.apply_settings(exe_name, profile.audio)
 
     def _resolve_target_exe(self, exe: str | None) -> str | None:
         if exe:
@@ -190,15 +204,23 @@ class LuminaAppContext:
         return self._build_remote_state()
 
     def _build_remote_state(self) -> dict[str, Any]:
+        audio_snapshot = self.audio.snapshot()
         programs: list[dict[str, Any]] = []
         for exe in self.profiles.list_executables():
             profile = self.profiles.get(exe)
             if profile:
-                programs.append({"exe": exe, "sliders": profile.to_dict()})
+                programs.append(
+                    {
+                        "exe": exe,
+                        "sliders": profile.to_dict(),
+                        "audio": self._program_audio_state(exe, profile, audio_snapshot).to_dict(),
+                    }
+                )
         return {
             "observer_enabled": self.profiles.settings.observer_enabled,
             "active_exe": self.engine.active_executable,
             "sliders": self._current_sliders_dict(),
+            "audio": self._current_audio_dict(audio_snapshot),
             "programs": programs,
         }
 
@@ -211,12 +233,37 @@ class LuminaAppContext:
         desktop = self.profiles.desktop_profile()
         return desktop.to_dict()
 
+    def _current_audio_dict(self, snapshot: AudioSnapshot | None = None) -> dict[str, Any]:
+        active = self.engine.active_executable
+        profile = self.profiles.get(active) if active else None
+        return self._program_audio_state(active, profile, snapshot).to_dict()
+
+    def _program_audio_state(
+        self,
+        exe_name: str | None,
+        profile: ColorProfile | None = None,
+        snapshot: AudioSnapshot | None = None,
+    ) -> AudioState:
+        saved = profile.audio if profile is not None else AudioSettings()
+        return self.audio.describe(exe_name, saved, snapshot)
+
+    def get_program_audio_state(self, exe_name: str | None) -> AudioState:
+        profile = self.profiles.get(exe_name) if exe_name else None
+        return self._program_audio_state(exe_name, profile)
+
     def _remote_set_sliders(self, profile: ColorProfile, exe: str | None) -> None:
         target = self._resolve_target_exe(exe)
         if target:
-            self.update_program(target, profile)
+            self.update_program_colors(target, profile)
         else:
             self.display.apply_profile(profile)
+        self._notify_ui_sync()
+
+    def _remote_set_audio(self, settings: AudioSettings, exe: str | None) -> None:
+        target = self._resolve_target_exe(exe)
+        if not target:
+            raise ProtocolError("no target executable for audio")
+        self.update_program_audio(target, settings)
         self._notify_ui_sync()
 
     def _remote_reset_profile(self, exe: str | None) -> None:
@@ -317,6 +364,37 @@ class LuminaAppContext:
         active = self.engine.active_executable
         if active and active.lower() == exe_name.lower():
             self.display.apply_profile(profile)
+            self.audio.apply_settings(exe_name, profile.audio)
+        self._notify_ui_sync()
+
+    def update_program_colors(self, exe_name: str, profile: ColorProfile) -> None:
+        existing = self.profiles.get(exe_name)
+        merged = ColorProfile(
+            vibrance=profile.vibrance,
+            brightness=profile.brightness,
+            contrast=profile.contrast,
+            gamma=profile.gamma,
+            hue=profile.hue,
+            audio=existing.audio if existing else AudioSettings(),
+        )
+        self.update_program(exe_name, merged)
+
+    def update_program_audio(self, exe_name: str, settings: AudioSettings) -> None:
+        existing = self.profiles.get(exe_name) or DEFAULT_GAME_PROFILE
+        merged_audio = AudioSettings(
+            volume=settings.volume if settings.volume is not None else existing.audio.volume,
+            muted=settings.muted if settings.muted is not None else existing.audio.muted,
+        )
+        merged = ColorProfile(
+            vibrance=existing.vibrance,
+            brightness=existing.brightness,
+            contrast=existing.contrast,
+            gamma=existing.gamma,
+            hue=existing.hue,
+            audio=merged_audio,
+        )
+        self.profiles.upsert(exe_name, merged)
+        self.audio.apply_settings(exe_name, merged.audio)
         self._notify_ui_sync()
 
     def pick_exe_manually(self) -> str | None:
