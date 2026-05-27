@@ -13,8 +13,17 @@ VibranceFlow Core is the Windows desktop app for game-based color profiles and l
 
 ## Download and install (Windows)
 
-1. Open the repository **Releases** page.
-2. Download the latest `VibranceFlow.exe` artifact.
+Official downloads live on GitHub Releases:
+
+| Build | Releases page |
+| --- | --- |
+| **Windows** (`VibranceFlow.exe`) | [github.com/VibranceFlow/VibranceFlow-core/releases](https://github.com/VibranceFlow/VibranceFlow-core/releases) |
+| **Android APK** (`vibranceflow-release.apk`) | [github.com/VibranceFlow/VibranceFlow-mobile/releases](https://github.com/VibranceFlow/VibranceFlow-mobile/releases) |
+
+Steps on Windows:
+
+1. Open **[VibranceFlow Core Releases](https://github.com/VibranceFlow/VibranceFlow-core/releases)**.
+2. Download the latest `VibranceFlow.exe` (and optionally `VibranceFlow.exe.sha256`) from that release.
 3. Place it in any folder (for example `C:\Program Files\VibranceFlow\`).
 4. Run `VibranceFlow.exe`.
 
@@ -64,10 +73,10 @@ This project follows a strict transparency model:
 - encrypted local transport (WebSocket + payload encryption)
 - zero analytics and zero telemetry
 
-VirusTotal references (maintainer-updated):
+Transparency — VirusTotal reports (for binaries built from CI for the releases above):
 
-- EXE scan: [Link to VirusTotal Scan - EXE/APK]
-- APK scan: [Link to VirusTotal Scan - EXE/APK]
+- **Windows** (`VibranceFlow.exe`): [VirusTotal](https://www.virustotal.com/gui/file/9ad23e5a5d2555c60e3d8461a95c34fe02b8760b6d3d9fd60fb354bea3d7f301)
+- **Android** (`vibranceflow-release.apk`): [VirusTotal](https://www.virustotal.com/gui/file/8418c3cde2d31a0a63a6c3e96488e57ee47f89e2833051e336440745f2c2bd49)
 
 Before trusting any downloaded executable, always verify integrity:
 
@@ -94,7 +103,7 @@ Modern software distribution has real platform tolls that are difficult for inde
 - Apple Developer Program: **US$99/year**
 - Google Play Store registration: **US$25** one-time
 
-Support link: [Support VibranceFlow on Ko-fi](https://ko-fi.com/YOUR_USERNAME)
+Support link: [Support VibranceFlow on Ko-fi](https://ko-fi.com/fabio_monreal)
 
 If community funding reaches these milestones, VibranceFlow binaries can be signed and published through official stores/channels (Microsoft, Apple, Google).  
 Until then, the focus remains: open-source, free access, transparent security practices, and reproducible local tooling.
