@@ -10,6 +10,11 @@ jobs:
   build-windows:
     runs-on: windows-latest
     timeout-minutes: 45
+    env:
+      VIBRANCEFLOW_VERSION: "1.0.0"
+      VIBRANCEFLOW_COMPANY: "VibranceFlow"
+      VIBRANCEFLOW_PRODUCT: "VibranceFlow"
+      VIBRANCEFLOW_FILE_DESCRIPTION: "Per-game color and audio profile switcher for Windows"
 
     steps:
       - name: Checkout
@@ -41,20 +46,28 @@ jobs:
             --assume-yes-for-downloads `
             --output-dir=dist `
             --output-filename=VibranceFlow `
+            --windows-company-name="$env:VIBRANCEFLOW_COMPANY" `
+            --windows-product-name="$env:VIBRANCEFLOW_PRODUCT" `
+            --windows-file-description="$env:VIBRANCEFLOW_FILE_DESCRIPTION" `
+            --windows-product-version="$env:VIBRANCEFLOW_VERSION" `
+            --windows-file-version="$env:VIBRANCEFLOW_VERSION" `
             --windows-icon-from-ico=ui/Logos/ICO/logo.ico `
-            --include-package=core `
-            --include-package=ui `
-            --include-package=customtkinter `
-            --include-package=websockets `
-            --include-package=cryptography `
-            --include-package=qrcode `
             --include-package=pycaw `
             --include-package=comtypes `
+            --nofollow-import-to=comtypes.test,pulsectl `
             gui_main.py
+
+      - name: Generate executable SHA256
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash "dist/VibranceFlow.exe" -Algorithm SHA256).Hash.ToLower()
+          "$hash  VibranceFlow.exe" | Out-File -FilePath "dist/VibranceFlow.exe.sha256" -Encoding ascii
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: VibranceFlow-core-windows-exe
-          path: dist/VibranceFlow.exe
+          path: |
+            dist/VibranceFlow.exe
+            dist/VibranceFlow.exe.sha256
           if-no-files-found: error
