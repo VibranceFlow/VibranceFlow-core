@@ -6,7 +6,7 @@ import tkinter.messagebox as messagebox
 
 import customtkinter as ctk
 
-from core.models import ColorProfile
+from core.models import AudioSettings, ColorProfile
 from ui.app_context import LuminaAppContext
 from ui.brand_assets import ico_path, load_header_ctk_image
 from ui.layout import center_on_screen, compute_window_sizes, set_window_size_keep_position
@@ -41,12 +41,17 @@ class VibranceFlowWindow(ctk.CTk):
         self._program_buttons: dict[str, ctk.CTkButton] = {}
         self._slider_vars: dict[str, ctk.DoubleVar | ctk.IntVar] = {}
         self._updating_sliders = False
+        self._updating_audio = False
+        self._audio_available = False
+        self._audio_muted = False
+        self._audio_var = ctk.DoubleVar(value=100.0)
         self._quitting = False
         self._visible = not start_hidden
 
         sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
-        self._size_compact, self._size_expanded = compute_window_sizes(sw, sh)
-        self._expanded = False
+        _compact, self._size_expanded = compute_window_sizes(sw, sh)
+        self._size_compact = self._size_expanded
+        self._expanded = True
 
         self.title("VibranceFlow")
         self.configure(fg_color=BG_DARK)
@@ -64,6 +69,7 @@ class VibranceFlowWindow(ctk.CTk):
         self._build_status()
 
         self._profile_debouncer = Debouncer(self, 180, self._flush_profile_save)
+        self._audio_debouncer = Debouncer(self, 180, self._flush_audio_save)
         self._desktop_debouncer = Debouncer(self, 180, self._flush_desktop_vibrance)
 
         self._tray = TrayController(on_show=self._show_from_tray, on_quit=self._quit_app)
@@ -234,7 +240,8 @@ class VibranceFlowWindow(ctk.CTk):
     def _build_profile_editor(self) -> None:
         self._profile_box = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=10)
         self._profile_inner = ctk.CTkFrame(self._profile_box, fg_color="transparent")
-        self._sliders_container = ctk.CTkFrame(self._profile_inner, fg_color="transparent")
+        self._editor_body = ctk.CTkFrame(self._profile_inner, fg_color="transparent")
+        self._sliders_container = ctk.CTkFrame(self._editor_body, fg_color="transparent")
 
         title_row = ctk.CTkFrame(self._profile_inner, fg_color="transparent")
         title_row.pack(fill="x", padx=8, pady=(6, 2))
@@ -258,12 +265,15 @@ class VibranceFlowWindow(ctk.CTk):
         )
         self._btn_reset.pack(side="right")
 
+        self._editor_body.pack(fill="x", padx=4, pady=(0, 8))
+        self._sliders_container.pack(side="left", fill="x", expand=True)
+
         specs = [
             ("vibrance", "Vib", 0, 100, 100),
             ("brightness", "Bri", -50, 50, 100),
             ("contrast", "Con", -50, 50, 100),
             ("gamma", "Gam", 0.4, 2.8, 24),
-            ("hue", "Mat", 0, 359, 359),
+            ("hue", "Hue", 0, 359, 359),
         ]
         for key, label, lo, hi, steps in specs:
             row = ctk.CTkFrame(self._sliders_container, fg_color="transparent")
@@ -292,6 +302,58 @@ class VibranceFlowWindow(ctk.CTk):
                 command=lambda _v, k=key: self._on_profile_slider_move(k),
             ).pack(side="left", fill="x", expand=True, padx=4)
             setattr(self, f"_lbl_{key}", val_lbl)
+
+        self._audio_side = ctk.CTkFrame(self._editor_body, fg_color=BG_DARK, corner_radius=8, width=88)
+        self._audio_side.pack(side="right", fill="y", padx=(10, 0))
+        self._audio_side.pack_propagate(False)
+        ctk.CTkLabel(
+            self._audio_side,
+            text="Audio",
+            font=FONT_SMALL,
+            text_color=TEXT_SECONDARY,
+        ).pack(pady=(10, 6))
+        self._btn_audio_mute = ctk.CTkButton(
+            self._audio_side,
+            text="🔊",
+            width=40,
+            height=32,
+            font=FONT_SMALL,
+            fg_color=BG_CARD_HOVER,
+            hover_color=ACCENT,
+            text_color=TEXT_PRIMARY,
+            command=self._on_audio_mute_toggle,
+        )
+        self._btn_audio_mute.pack(pady=(0, 8))
+        self._audio_slider = ctk.CTkSlider(
+            self._audio_side,
+            from_=0,
+            to=100,
+            number_of_steps=100,
+            width=18,
+            height=148,
+            variable=self._audio_var,
+            progress_color=ACCENT_SECONDARY,
+            button_color=ACCENT,
+            command=self._on_audio_slide,
+            orientation="vertical",
+        )
+        self._audio_slider.pack(pady=(0, 8))
+        self._lbl_audio = ctk.CTkLabel(
+            self._audio_side,
+            text="100%",
+            font=("Segoe UI", 13, "bold"),
+            text_color=ACCENT,
+        )
+        self._lbl_audio.pack(pady=(0, 6))
+        self._audio_hint = ctk.CTkLabel(
+            self._audio_side,
+            text="",
+            font=FONT_SMALL,
+            text_color=TEXT_MUTED,
+            wraplength=72,
+            justify="center",
+        )
+        self._audio_hint.pack(fill="x", padx=6, pady=(0, 10))
 
     def _build_status(self) -> None:
         self._status_bar = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=0, height=28)
@@ -324,7 +386,6 @@ class VibranceFlowWindow(ctk.CTk):
         if not self._profile_panel_visible():
             self._profile_box.pack(fill="x", padx=10, pady=(4, 6), before=self._status_bar)
             self._profile_inner.pack(fill="x", padx=4, pady=4)
-            self._sliders_container.pack(fill="x", padx=4, pady=(0, 8))
         self._profile_title.configure(text=exe)
         if need_resize:
             self._set_window_expanded(True)
@@ -392,6 +453,7 @@ class VibranceFlowWindow(ctk.CTk):
         self._slider_vars["hue"].set(profile.hue)
         self._updating_sliders = False
         self._refresh_slider_labels()
+        self._apply_audio_state(exe)
 
     def _clear_program_selection(self) -> None:
         self._selected_exe = None
@@ -436,6 +498,42 @@ class VibranceFlowWindow(ctk.CTk):
         self._lbl_contrast.configure(text=f"{self._slider_vars['contrast'].get():+.0f}%")
         self._lbl_gamma.configure(text=f"{self._slider_vars['gamma'].get():.2f}")
         self._lbl_hue.configure(text=f"{int(self._slider_vars['hue'].get())}°")
+        self._lbl_audio.configure(text=f"{self._audio_var.get():.0f}%")
+
+    def _apply_audio_state(self, exe: str) -> None:
+        state = self._ctx.get_program_audio_state(exe)
+        self._audio_available = state.available
+        self._audio_muted = state.muted
+        self._updating_audio = True
+        self._audio_var.set(state.volume)
+        self._updating_audio = False
+        self._lbl_audio.configure(text=f"{state.volume:.0f}%")
+        icon = "🔇" if state.muted else "🔊"
+        fg = BG_CARD_HOVER if state.available else BG_DARK
+        txt = TEXT_PRIMARY if state.available else TEXT_MUTED
+        self._btn_audio_mute.configure(text=icon, fg_color=fg, text_color=txt)
+        self._audio_slider.configure(
+            state="normal" if state.available else "disabled",
+            progress_color=ACCENT_SECONDARY if state.available else BG_CARD_HOVER,
+            button_color=ACCENT if state.available else TEXT_MUTED,
+        )
+        backend = state.backend.replace("-", " ").title() if state.backend else "Audio"
+        if state.available:
+            session_label = "session" if state.session_count == 1 else "sessions"
+            detail = state.display_name if state.display_name and state.display_name != exe else exe
+            hint = f"{backend} · {state.session_count} {session_label} · {detail}"
+        else:
+            reason_map = {
+                "no_session": "No live audio session for this app on PC.",
+                "backend_unavailable": "Audio backend unavailable on this platform.",
+                "backend_error": "Audio backend could not read live sessions.",
+                "no_target": "Select an app to edit audio.",
+            }
+            hint = reason_map.get(state.reason, "Audio session unavailable right now.")
+        self._audio_hint.configure(
+            text=hint,
+            text_color=TEXT_SECONDARY if state.available else TEXT_MUTED,
+        )
 
     def _on_profile_slider_move(self, _key: str) -> None:
         if self._updating_sliders:
@@ -443,17 +541,43 @@ class VibranceFlowWindow(ctk.CTk):
         self._refresh_slider_labels()
         self._profile_debouncer.trigger()
 
+    def _on_audio_slide(self, value: float) -> None:
+        if self._updating_audio or not self._selected_exe or not self._audio_available:
+            return
+        self._lbl_audio.configure(text=f"{value:.0f}%")
+        self._audio_debouncer.trigger()
+
+    def _flush_audio_save(self) -> None:
+        if not self._selected_exe or not self._audio_available:
+            return
+        self._ctx.update_program_audio(
+            self._selected_exe,
+            AudioSettings(volume=float(self._audio_var.get())),
+        )
+
+    def _on_audio_mute_toggle(self) -> None:
+        if not self._selected_exe or not self._audio_available:
+            return
+        self._audio_muted = not self._audio_muted
+        self._ctx.update_program_audio(
+            self._selected_exe,
+            AudioSettings(muted=self._audio_muted),
+        )
+        self._apply_audio_state(self._selected_exe)
+
     def _flush_profile_save(self) -> None:
         if not self._selected_exe:
             return
+        current = self._ctx.profiles.get(self._selected_exe)
         profile = ColorProfile(
             vibrance=float(self._slider_vars["vibrance"].get()),
             brightness=float(self._slider_vars["brightness"].get()),
             contrast=float(self._slider_vars["contrast"].get()),
             gamma=float(self._slider_vars["gamma"].get()),
             hue=int(self._slider_vars["hue"].get()),
+            audio=current.audio if current else AudioSettings(),
         )
-        self._ctx.update_program(self._selected_exe, profile)
+        self._ctx.update_program_colors(self._selected_exe, profile)
 
     def _sync_desktop_sliders(self) -> None:
         s = self._ctx.profiles.settings
@@ -505,23 +629,20 @@ class VibranceFlowWindow(ctk.CTk):
         if known != current:
             self._refresh_program_grid()
 
-        active = self._ctx.engine.active_executable
-        if active and active in self._ctx.profiles.list_executables():
-            if self._selected_exe != active:
-                self._select_program(active)
-            elif self._selected_exe == active:
-                profile = self._ctx.profiles.get(active)
-                if profile:
-                    self._updating_sliders = True
-                    self._slider_vars["vibrance"].set(profile.vibrance)
-                    self._slider_vars["brightness"].set(profile.brightness)
-                    self._slider_vars["contrast"].set(profile.contrast)
-                    self._slider_vars["gamma"].set(profile.gamma)
-                    self._slider_vars["hue"].set(profile.hue)
-                    self._updating_sliders = False
-                    self._refresh_slider_labels()
-        elif self._selected_exe and self._selected_exe not in current:
+        if self._selected_exe and self._selected_exe not in current:
             self._clear_program_selection()
+        elif self._selected_exe and self._selected_exe in current:
+            profile = self._ctx.profiles.get(self._selected_exe)
+            if profile:
+                self._updating_sliders = True
+                self._slider_vars["vibrance"].set(profile.vibrance)
+                self._slider_vars["brightness"].set(profile.brightness)
+                self._slider_vars["contrast"].set(profile.contrast)
+                self._slider_vars["gamma"].set(profile.gamma)
+                self._slider_vars["hue"].set(profile.hue)
+                self._updating_sliders = False
+                self._refresh_slider_labels()
+                self._apply_audio_state(self._selected_exe)
 
         obs = self._ctx.profiles.settings.observer_enabled
         want = 1 if obs else 0
@@ -602,6 +723,7 @@ class VibranceFlowWindow(ctk.CTk):
     def _quit_app(self) -> None:
         self._quitting = True
         self._profile_debouncer.cancel()
+        self._audio_debouncer.cancel()
         self._desktop_debouncer.cancel()
         release_all_modal_grabs(self)
         self._tray.stop()

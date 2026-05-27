@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "settings": {
     "desktop_vibrance": 50,
     "desktop_brightness": 0,
@@ -17,7 +17,11 @@
       "brightness": 42,
       "contrast": 50,
       "gamma": 1.1,
-      "hue": 0
+      "hue": 0,
+      "audio": {
+        "volume": 65,
+        "muted": false
+      }
     },
     "notepad.exe": {
       "vibrance": 30,

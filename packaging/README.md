@@ -18,5 +18,5 @@ See `build_appimage.sh` skeleton for directory layout.
 
 ## Notes
 
-- Include `customtkinter`, `websockets`, `cryptography`, and `qrcode` in Nuitka `--include-package` flags.
+- Include `customtkinter`, `websockets`, `cryptography`, `qrcode`, `pycaw`, and `comtypes` in Nuitka `--include-package` flags.
 - Sign Windows binaries before Store submission when possible.

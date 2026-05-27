@@ -6,6 +6,7 @@ import logging
 import threading
 from typing import Literal
 
+from core.audio_manager import AudioManager
 from core.display_manager import WindowsDisplayManager
 from core.profile_manager import ProfileManager
 from core.window_monitor import get_foreground_executable
@@ -20,10 +21,12 @@ class LuminaEngine:
         self,
         display: WindowsDisplayManager,
         profiles: ProfileManager,
+        audio: AudioManager | None = None,
         poll_interval: float = 1.0,
     ) -> None:
         self._display = display
         self._profiles = profiles
+        self._audio = audio
         self._poll_interval = poll_interval
         self._active_exe: str | None = None
         self._state: EngineState = "desktop"
@@ -76,6 +79,7 @@ class LuminaEngine:
     def _tick(self) -> None:
         exe = get_foreground_executable()
         if exe == self._active_exe:
+            self._sync_active_audio(exe)
             return
 
         prev = self._active_exe
@@ -84,6 +88,7 @@ class LuminaEngine:
         profile = self._profiles.get(exe) if exe else None
         if profile is not None:
             self._display.apply_profile(profile)
+            self._sync_active_audio(exe, profile)
             self._state = "profile"
             logger.info("Profile applied: %s (was: %s)", exe, prev)
         else:
@@ -96,3 +101,11 @@ class LuminaEngine:
             self._display.restore_defaults()
             return
         self._display.apply_profile(self._profiles.desktop_profile())
+
+    def _sync_active_audio(self, exe: str | None, profile=None) -> None:
+        if self._audio is None or not exe:
+            return
+        current = profile or self._profiles.get(exe)
+        if current is None or not current.audio.configured:
+            return
+        self._audio.apply_settings(exe, current.audio)

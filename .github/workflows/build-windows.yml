@@ -1,0 +1,60 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install build tooling
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry nuitka
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: |
+          poetry install --with packaging
+
+      - name: Build onefile Windows executable
+        shell: pwsh
+        run: |
+          poetry run python -m nuitka `
+            --onefile `
+            --windows-disable-console `
+            --assume-yes-for-downloads `
+            --output-dir=dist `
+            --output-filename=VibranceFlow `
+            --windows-icon-from-ico=ui/Logos/ICO/logo.ico `
+            --include-package=core `
+            --include-package=ui `
+            --include-package=customtkinter `
+            --include-package=websockets `
+            --include-package=cryptography `
+            --include-package=qrcode `
+            --include-package=pycaw `
+            --include-package=comtypes `
+            gui_main.py
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibranceFlow-core-windows-exe
+          path: dist/VibranceFlow.exe
+          if-no-files-found: error
