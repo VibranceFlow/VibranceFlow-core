@@ -1,6 +1,7 @@
 # VibranceFlow Core
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+[![Build Windows EXE](https://github.com/VibranceFlow/VibranceFlow-core/actions/workflows/build-windows.yml/badge.svg)](https://github.com/VibranceFlow/VibranceFlow-core/actions/workflows/build-windows.yml)
 
 VibranceFlow Core is the Windows desktop app for game-based color profiles and local mobile pairing.
 
