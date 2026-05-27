@@ -18,5 +18,15 @@ See `build_appimage.sh` skeleton for directory layout.
 
 ## Notes
 
-- Include `customtkinter`, `websockets`, `cryptography`, `qrcode`, `pycaw`, and `comtypes` in Nuitka `--include-package` flags.
-- Sign Windows binaries before Store submission when possible.
+- Build now emits:
+  - `dist\VibranceFlow.exe`
+  - `dist\VibranceFlow.exe.sha256`
+- Sign Windows binaries before public distribution when possible.
+
+## False-positive mitigation checklist
+
+1. Build via GitHub Actions workflow `build-windows.yml`.
+2. Verify `VibranceFlow.exe` and `VibranceFlow.exe.sha256` are both published in artifact/release.
+3. Submit the shipped binary hash + sample to Microsoft Defender false-positive portal.
+4. Submit to vendors that flagged the sample in VirusTotal.
+5. Re-run VirusTotal after signature updates and track detection trend before broad announcement.
