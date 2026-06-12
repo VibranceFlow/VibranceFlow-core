@@ -37,9 +37,20 @@ jobs:
         run: |
           poetry install --with packaging
 
+      - name: Protocol v1 guard
+        shell: pwsh
+        run: poetry run python scripts/verify_protocol_v1.py
+
+      - name: Remote boot smoke test (dev)
+        shell: pwsh
+        run: |
+          poetry run python scripts/test_remote_boot.py
+          poetry run python scripts/test_prepare_pairing.py
+
       - name: Build onefile Windows executable
         shell: pwsh
         run: |
+          . ./packaging/nuitka_common.ps1
           poetry run python -m nuitka `
             --onefile `
             --windows-console-mode=disable `
@@ -52,9 +63,7 @@ jobs:
             --windows-product-version="$env:VIBRANCEFLOW_VERSION" `
             --windows-file-version="$env:VIBRANCEFLOW_VERSION" `
             --windows-icon-from-ico=ui/Logos/ICO/logo.ico `
-            --include-package=pycaw `
-            --include-package=comtypes `
-            --nofollow-import-to=comtypes.test,pulsectl `
+            @NuitkaCommonArgs `
             gui_main.py
 
       - name: Generate executable SHA256
