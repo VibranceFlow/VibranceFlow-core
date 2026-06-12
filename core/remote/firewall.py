@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import ctypes
 import logging
 import subprocess
 import sys
+import time
 
 from core.remote.pairing import DEFAULT_PORT
 
@@ -12,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 _RULES_ADDED: set[int] = set()
 _APP_RULE_ADDED = False
+
+# ShellExecuteW return codes <= 32 indicate failure (incl. user cancelled UAC).
+_SHELL_EXECUTE_SUCCESS_MIN = 32
 
 
 def _rule_name(port: int) -> str:
@@ -35,15 +40,78 @@ def _rule_exists(port: int) -> bool:
     return r.returncode == 0 and "No rules match" not in out and name in out
 
 
-def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
+def is_firewall_configured(port: int = DEFAULT_PORT) -> bool:
+    """True when an inbound rule for this port already exists (or was added this session)."""
+    if port in _RULES_ADDED:
+        return True
+    if sys.platform != "win32":
+        return True
+    if _rule_exists(port):
+        _RULES_ADDED.add(port)
+        return True
+    return False
+
+
+def request_elevated_firewall_rule(port: int = DEFAULT_PORT) -> tuple[bool, str | None]:
     """
-    Allow inbound TCP on private networks. May trigger Windows Firewall / UAC prompt.
-    Returns a short warning for the UI, or None on success / non-Windows.
+    Show the Windows UAC prompt once to add the inbound TCP rule.
+
+    Returns (uac_launched, error_message). The rule may appear a moment after approval.
     """
     if sys.platform != "win32":
-        return None
-    if port in _RULES_ADDED or _rule_exists(port):
-        _RULES_ADDED.add(port)
+        return False, _manual_firewall_hint(port)
+    if is_firewall_configured(port):
+        return True, None
+
+    name = _rule_name(port)
+    params = (
+        f"advfirewall firewall add rule "
+        f'name="{name}" dir=in action=allow protocol=TCP localport={port} profile=private'
+    )
+    try:
+        ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", "netsh", params, None, 0)
+    except OSError as e:
+        logger.warning("elevated firewall ShellExecute failed: %s", e)
+        return False, "Could not open the administrator prompt."
+
+    if ret <= _SHELL_EXECUTE_SUCCESS_MIN:
+        logger.info("elevated firewall UAC not launched (code %s)", ret)
+        return False, "Administrator approval was cancelled or denied."
+
+    for _ in range(24):
+        time.sleep(0.25)
+        if _rule_exists(port):
+            _RULES_ADDED.add(port)
+            logger.info("Firewall rule added via UAC: %s (TCP %s)", name, port)
+            return True, None
+
+    return True, None
+
+
+def _manual_firewall_hint(port: int) -> str | None:
+    if sys.platform.startswith("linux"):
+        return (
+            f"Allow inbound TCP {port} in your firewall (e.g. ufw allow {port}/tcp) "
+            "if the phone cannot connect on LAN."
+        )
+    if sys.platform == "darwin":
+        return (
+            f"Allow VibranceFlow incoming connections in macOS Firewall "
+            f"(TCP {port}) if the phone cannot connect on LAN."
+        )
+    return None
+
+
+def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
+    """
+    Try to add an inbound TCP rule without elevation.
+
+    Returns a short warning for the UI, or None on success. Never blocks server bind.
+    Use request_elevated_firewall_rule() when the user opts in (UAC once).
+    """
+    if sys.platform != "win32":
+        return _manual_firewall_hint(port)
+    if is_firewall_configured(port):
         return None
 
     name = _rule_name(port)
@@ -59,7 +127,7 @@ def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
         "action=allow",
         "protocol=TCP",
         f"localport={port}",
-        "profile=any",
+        "profile=private",
     ]
     try:
         r = subprocess.run(
@@ -81,12 +149,12 @@ def ensure_firewall_rule(port: int = DEFAULT_PORT) -> str | None:
         logger.warning("netsh firewall add failed (%s): %s", r.returncode, err)
         if "access is denied" in err.lower() or "elevação" in err.lower() or "elevation" in err.lower():
             return (
-                "Firewall change needs administrator approval. "
-                f"Allow inbound TCP port {port} for VibranceFlow on private networks."
+                f"Firewall needs administrator approval for TCP {port}. "
+                'Click "Allow in Firewall" below and approve the UAC prompt.'
             )
         return (
             f"Firewall rule was not added (TCP {port}). "
-            "Allow VibranceFlow on private networks if the phone cannot connect."
+            'Use "Allow in Firewall" below or allow VibranceFlow on private networks manually.'
         )
 
     _RULES_ADDED.add(port)
