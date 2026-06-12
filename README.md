@@ -30,19 +30,18 @@ If Windows SmartScreen appears, choose **More info** and run only when the relea
 
 ## Firewall and LAN pairing
 
-Mobile control uses local WebSocket on port `8765`.
+Mobile control uses a local WebSocket on port `8765` (same Wi‑Fi / LAN as the PC).
 
-When Windows Firewall prompts:
+1. Open **Pair Mobile** in the desktop app.
+2. If a firewall warning appears, click **Allow in Firewall** and approve the Windows UAC prompt once.
+   This adds an inbound rule for TCP `8765` on **private** networks only.
+3. On the phone, enter the shown **IP + 6-digit code**, or scan the **QR code** (recommended).
 
-- allow on **Private networks**
-- keep **Public networks** disabled unless you explicitly need it
+You do **not** need to run VibranceFlow as administrator. Only the one-time firewall approval requires elevation.
 
-Pairing options:
+Optional setting **Keep remote port open (8765)** stays enabled after Pair Mobile so the phone can reconnect later. Uncheck it to stop the LAN server when no phone is connected.
 
-- 6-digit pairing code
-- QR code (recommended)
-
-All commands are encrypted end-to-end on LAN using Fernet payload encryption.
+All commands are encrypted on the LAN using Fernet payload encryption.
 
 ## Privacy and security
 
@@ -101,9 +100,19 @@ Until then, the focus remains: open-source, free access, transparent security pr
 
 ## Troubleshooting
 
-- **Mobile cannot connect:** confirm phone and PC are on the same LAN and firewall allows private access.
+- **Mobile cannot connect:** same Wi‑Fi / LAN; use **Allow in Firewall** in Pair Mobile; confirm the IP shown is not `127.0.0.1`. Turn off mobile data on the phone (4G cannot reach `192.168.x.x`).
+- **Old Android APK fails but Expo Go works:** install a current APK built with LAN cleartext config — see [mobile compatibility notes](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
+- **Port already in use:** close any other VibranceFlow window (only one instance can run).
+- **`.exe` does not open:** try the debug build (`packaging/build_windows_debug.ps1`) or check `%APPDATA%\VibranceFlow\app.log`.
+- **Defender removed the `.exe`:** restore from the official GitHub release and verify SHA256 (see [Security](#-security-false-positives--transparency) above).
 - **Audio slider is disabled:** the selected app has no active audio session on the PC.
 - **Profile not switching:** verify Observer is enabled and the executable is saved in the profile list.
+
+## Mobile companion (protocol v1)
+
+Core releases on **protocol v1** (port `8765`, Fernet wire) stay compatible with an existing **VibranceFlow-mobile** APK 1.0.x that includes LAN cleartext. You do **not** need a new APK for core-only GUI, engine, firewall, or packaging updates.
+
+Coordinate a **new APK** only when bumping wire `"v"`, port, Fernet format, or mobile pairing code. Full matrix: [VibranceFlow-mobile/docs/CORE_APK_COMPATIBILITY.md](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
 
 ## For developers
 
