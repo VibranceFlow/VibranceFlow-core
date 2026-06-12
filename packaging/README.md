@@ -16,6 +16,15 @@
 
 See `build_appimage.sh` skeleton for directory layout.
 
+## Debug local `.exe`
+
+If the release `.exe` exits without showing a window:
+
+1. **Debug build (console + traceback):** `.\packaging\build_windows_debug.ps1` then run `.\dist\VibranceFlow-debug.exe`.
+2. **Frozen log file:** packaged builds write to `%APPDATA%\VibranceFlow\app.log` on errors. Override path with `VIBRANCEFLOW_LOG=C:\path\to\log.txt`.
+3. **Shared Nuitka flags:** `packaging/nuitka_common.ps1` (GUI + LAN remote: tk-inter, customtkinter, websockets, cryptography, qrcode).
+4. **Remote smoke tests:** `poetry run python scripts/test_remote_boot.py` and `scripts/test_prepare_pairing.py` (CI runs both before build).
+
 ## Notes
 
 - Build now emits:

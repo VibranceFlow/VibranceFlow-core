@@ -5,7 +5,16 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 poetry install --with packaging
-poetry run python -m nuitka --standalone --output-dir=dist/linux gui_main.py
+# Mirror packaging/nuitka_common.ps1 flags when Linux GUI port is ready.
+poetry run python -m nuitka --standalone --output-dir=dist/linux \
+  --enable-plugin=tk-inter \
+  --include-package-data=customtkinter \
+  --include-data-dir=ui/Logos=ui/Logos \
+  --include-package=websockets \
+  --include-package=cryptography \
+  --include-package=qrcode \
+  --nofollow-import-to=comtypes.test,pulsectl \
+  gui_main.py
 
 APP_DIR="$ROOT/dist/VibranceFlow.AppDir"
 mkdir -p "$APP_DIR/usr/bin"

@@ -1,7 +1,9 @@
-# Build VibranceFlow Windows executable with Nuitka (requires Poetry + packaging group).
+# Build VibranceFlow Windows executable with Nuitka (requires Poetry + packaging).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
+
+. (Join-Path $PSScriptRoot "nuitka_common.ps1")
 
 poetry install --with packaging
 $Ico = Get-ChildItem -Path "ui\Logos\ICO\*.ico" -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -24,9 +26,7 @@ poetry run python -m nuitka `
   --windows-file-description="$FileDescription" `
   --windows-product-version="$Version" `
   --windows-file-version="$Version" `
-  --include-package=pycaw `
-  --include-package=comtypes `
-  --nofollow-import-to=comtypes.test,pulsectl `
+  @NuitkaCommonArgs `
   @IconArg `
   gui_main.py
 
