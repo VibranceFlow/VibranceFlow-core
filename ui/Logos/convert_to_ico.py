@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from PIL import Image
 
+# Prefer scripts/generate_brand_assets.py for the committed repo logo (PNG + ICO).
+
 def convert_png_to_ico():
     target_sizes = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
     current_dir = Path('.')

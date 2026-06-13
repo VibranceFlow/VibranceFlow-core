@@ -67,8 +67,18 @@ poetry run python scripts/test_fernet_cmds.py
 | `ui/layout.py` | Screen-aware window / pairing dialog sizing |
 | `gui_main.py` | GUI entry point |
 | `main.py` | CLI entry point |
+| `packaging/` | Nuitka Windows builds; see [packaging/README.md](packaging/README.md) |
+| `docs/FALSE_POSITIVE_RUNBOOK.md` | Maintainer AV false-positive checklist |
 
 Architecture write-ups, PoC scripts, and platform experiments are maintained in [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC).
+
+## Packaging and releases
+
+- Windows `.exe`: `poetry install --with packaging` then `.\packaging\build_windows.ps1`
+- Brand assets: `poetry run python scripts/generate_brand_assets.py`
+- CI build: `.github/workflows/build-windows.yml`
+- Public release: push tag `vX.Y.Z` or run `.github/workflows/release-windows.yml`
+- False positives (unsigned builds): [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)
 
 ## Guidelines
 
