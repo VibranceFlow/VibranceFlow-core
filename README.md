@@ -11,6 +11,20 @@ VibranceFlow Core is the Windows desktop app for game-based color profiles and l
 - Public build format: **single-file `.exe`**
 - Mobile companion for this release: **Android APK** (from `VibranceFlow-mobile`)
 
+## Who is this for? (Use Cases)
+
+VibranceFlow is fully standalone on Windows. The optional mobile companion acts as a convenient remote control.
+
+- **🎮 Gamers:** Adjust contrast and gamma *in-game*. Control the volume of background music (Spotify, Discord, etc.) directly from your phone without ever needing to Alt-Tab.
+- **🎨 Designers & Editors:** Easily alter saturation (vibrance) and contrast to test the visual accessibility of images, drawings, and videos across different spectrums.
+- **📺 Casual Users:** Control your PC's screen brightness, color tone, and volume remotely from the couch using your phone as a multimedia remote.
+- **🎥 Streamers:** Dynamically switch screen color profiles on your main display without leaking settings on the stream or interrupting the broadcast.
+
+### App Preview
+
+![VibranceFlow Main Window](docs/images/vibranceflow-windows-core-main.png)  
+![VibranceFlow Pair Mobile](docs/images/vibranceflow-windows-pair-mobile.png)
+
 ## Download and install (Windows)
 
 1. Open the repository [**Releases**](https://github.com/VibranceFlow/VibranceFlow-core/releases) page.
