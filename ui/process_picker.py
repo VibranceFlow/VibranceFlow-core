@@ -1,4 +1,4 @@
-"""Process picker dialog — fast Treeview + icon on selection."""
+"""Process picker dialog - fast Treeview + icon on selection."""
 
 from __future__ import annotations
 
@@ -278,7 +278,7 @@ class ProcessPickerDialog(ctk.CTkToplevel):
                 self._icon_keepalive.append(icon)
                 if len(self._icon_keepalive) > 16:
                     self._icon_keepalive.pop(0)
-                # CTkLabel applies "text" before "image" — set image first to avoid stale pyimage refs.
+                # CTkLabel applies "text" before "image" - set image first to avoid stale pyimage refs.
                 self._icon_label.configure(image=icon)
                 self._icon_label.configure(text="")
             else:

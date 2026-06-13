@@ -2,7 +2,7 @@
 """Generate legacy placeholder PNG/ICO (teal ring + purple dot).
 
 The product mark is ui/Logos/PNG/app_logo.png and ui/Logos/ICO/app_logo.ico.
-This script only refreshes logo.png / logo.ico fallbacks — not the header/tray icon.
+This script only refreshes logo.png / logo.ico fallbacks - not the header/tray icon.
 """
 
 from __future__ import annotations

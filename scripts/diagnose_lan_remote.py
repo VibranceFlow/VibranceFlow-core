@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LAN remote diagnostics — run while VibranceFlow GUI is open (Pair Mobile)."""
+"""LAN remote diagnostics - run while VibranceFlow GUI is open (Pair Mobile)."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assert LAN protocol v1 constants (CI guard — must match mobile INTEGRATION.md)."""
+"""Assert LAN protocol v1 constants (CI guard - must match mobile INTEGRATION.md)."""
 
 from __future__ import annotations
 

@@ -159,7 +159,7 @@ class PairingDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             box,
-            text=f"Listening on {host}:{DEFAULT_PORT} — same Wi‑Fi / LAN.",
+            text=f"Listening on {host}:{DEFAULT_PORT} - same Wi‑Fi / LAN.",
             font=FONT_SMALL,
             text_color="#3fb950",
             justify="center",
@@ -168,7 +168,7 @@ class PairingDialog(ctk.CTkToplevel):
 
         self._wait_label = ctk.CTkLabel(
             box,
-            text="Waiting for phone — scan QR or enter the code in the app.",
+            text="Waiting for phone - scan QR or enter the code in the app.",
             font=FONT_SMALL,
             text_color=TEXT_MUTED,
             justify="center",
@@ -293,7 +293,7 @@ class PairingDialog(ctk.CTkToplevel):
             )
         elif self._ctx.remote_is_listening:
             self._wait_label.configure(
-                text="Waiting for phone — scan QR or enter the code in the app.",
+                text="Waiting for phone - scan QR or enter the code in the app.",
                 text_color=TEXT_MUTED,
             )
         else:

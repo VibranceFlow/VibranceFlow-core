@@ -1,4 +1,4 @@
-"""Main engine — foreground polling loop and state machine."""
+"""Main engine - foreground polling loop and state machine."""
 
 from __future__ import annotations
 

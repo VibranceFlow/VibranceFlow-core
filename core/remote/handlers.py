@@ -1,4 +1,4 @@
-"""Remote command handlers — run on the main thread via bridge."""
+"""Remote command handlers - run on the main thread via bridge."""
 
 from __future__ import annotations
 

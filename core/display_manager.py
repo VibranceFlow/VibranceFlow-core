@@ -1,4 +1,4 @@
-"""Windows display manager — GDI32 + NVAPI."""
+"""Windows display manager - GDI32 + NVAPI."""
 
 from __future__ import annotations
 

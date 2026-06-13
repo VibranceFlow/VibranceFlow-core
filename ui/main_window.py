@@ -1,4 +1,4 @@
-"""VibranceFlow main window — compact layout."""
+"""VibranceFlow main window - compact layout."""
 
 from __future__ import annotations
 

@@ -33,7 +33,7 @@ VibranceFlow is fully standalone on Windows. The optional mobile companion acts 
 4. Place `VibranceFlow.exe` in any folder (for example `C:\Program Files\VibranceFlow\`).
 5. Run `VibranceFlow.exe`.
 
-If Windows SmartScreen appears, choose **More info** and continue **only** after verifying the SHA256 hash matches the official release. Unsigned builds show an unknown publisher — that is expected until a commercial code-signing certificate is funded.
+If Windows SmartScreen appears, choose **More info** and continue **only** after verifying the SHA256 hash matches the official release. Unsigned builds show an unknown publisher - that is expected until a commercial code-signing certificate is funded.
 
 ## First run
 
@@ -68,7 +68,7 @@ Threat model and reporting: [SECURITY.md](SECURITY.md). Wire protocol (contribut
 
 ## 🛡️ Security, False Positives & Transparency
 
-VibranceFlow Core is packaged with **Nuitka** (Python to native code) as a Windows executable. The default public build is a **single-file `.exe`** (`--onefile`), which unpacks to a temporary folder on first launch — a common pattern that some antivirus heuristics flag on unsigned software.
+VibranceFlow Core is packaged with **Nuitka** (Python to native code) as a Windows executable. The default public build is a **single-file `.exe`** (`--onefile`), which unpacks to a temporary folder on first launch - a common pattern that some antivirus heuristics flag on unsigned software.
 
 At runtime, the app calls native Windows APIs (**Win32/NVAPI**) to apply display settings, may open a **LAN WebSocket** for optional mobile control, and can request a **one-time UAC prompt** to add a private-network firewall rule for pairing. These behaviors are required for the product and are documented in the open-source tree.
 
@@ -123,7 +123,7 @@ Until then, the focus remains: open-source, free access, transparent security pr
 ## Troubleshooting
 
 - **Mobile cannot connect:** same Wi‑Fi / LAN; use **Allow in Firewall** in Pair Mobile; confirm the IP shown is not `127.0.0.1`. Turn off mobile data on the phone (4G cannot reach `192.168.x.x`).
-- **Old Android APK fails but Expo Go works:** install a current APK built with LAN cleartext config — see [mobile compatibility notes](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
+- **Old Android APK fails but Expo Go works:** install a current APK built with LAN cleartext config - see [mobile compatibility notes](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
 - **Port already in use:** close any other VibranceFlow window (only one instance can run).
 - **`.exe` does not open:** try the debug build (`packaging/build_windows_debug.ps1`) or check `%APPDATA%\VibranceFlow\app.log`.
 - **Defender removed or quarantined the `.exe`:** open Windows Security → Protection history; if the file was removed, download again from the official [GitHub Release](https://github.com/VibranceFlow/VibranceFlow-core/releases), verify SHA256, then run. If it is blocked again, submit a false positive to [Microsoft Security Intelligence](https://www.microsoft.com/en-us/wdsi/filesubmission) (see [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)).
@@ -143,4 +143,4 @@ Development setup, packaging notes, and contribution rules are documented in [CO
 
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE).
+GPL-3.0 - see [LICENSE](LICENSE).

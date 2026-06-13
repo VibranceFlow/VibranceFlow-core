@@ -1,4 +1,4 @@
-"""Windows executable icons — cache + SHGetFileInfo via ctypes."""
+"""Windows executable icons - cache + SHGetFileInfo via ctypes."""
 
 from __future__ import annotations
 
