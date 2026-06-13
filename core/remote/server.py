@@ -101,7 +101,7 @@ class RemoteServer:
         self._last_start_error = None
         self._listening.clear()
         self._host = get_lan_ipv4()
-        self._thread = threading.Thread(target=self._run_loop, name="LuminaRemoteWS", daemon=True)
+        self._thread = threading.Thread(target=self._run_loop, name="VibranceFlowRemoteWS", daemon=True)
         self._thread.start()
         logger.info("Remote server starting on %s:%s", self._host, self._port)
 

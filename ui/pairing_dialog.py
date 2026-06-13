@@ -11,7 +11,7 @@ from PIL import Image
 from core.remote.firewall import is_firewall_configured, request_elevated_firewall_rule
 from core.remote.pairing import DEFAULT_PORT, get_lan_ipv4_candidates
 from core.remote.server import RemoteServer
-from ui.app_context import LuminaAppContext
+from ui.app_context import VibranceFlowAppContext
 from ui.layout import center_toplevel, compute_pairing_dialog_layout
 from ui.modal_utils import activate_modal, bind_modal_close, destroy_modal
 from ui.theme import ACCENT, BG_CARD, BG_DARK, FONT_SMALL, TEXT_MUTED, TEXT_PRIMARY
@@ -22,7 +22,7 @@ _FOOTER_PAD = 6
 
 
 class PairingDialog(ctk.CTkToplevel):
-    def __init__(self, parent: ctk.CTk, ctx: LuminaAppContext, server: RemoteServer) -> None:
+    def __init__(self, parent: ctk.CTk, ctx: VibranceFlowAppContext, server: RemoteServer) -> None:
         super().__init__(parent)
         self._ctx = ctx
         self._server = server
