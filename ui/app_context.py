@@ -12,12 +12,18 @@ from tkinter import filedialog
 from core.audio_manager import AudioSnapshot, create_audio_manager
 from core.autostart import is_autostart_enabled, set_autostart
 from core.display_manager import WindowsDisplayManager
-from core.engine import LuminaEngine
+from core.engine import VibranceFlowEngine
 from core.models import AppSettings, AudioSettings, AudioState, ColorProfile
 from core.profile_manager import ProfileManager
 from core.remote.handlers import RemoteCommandHandler
 from core.remote.protocol import ProtocolError
 from core.remote.firewall import ensure_firewall_rule
+from core.remote.health import (
+    PortInUseError,
+    RemoteStartError,
+    is_port_in_use,
+    verify_remote_dependencies,
+)
 from core.remote.server import RemoteServer
 
 logger = logging.getLogger(__name__)
@@ -31,15 +37,16 @@ DEFAULT_GAME_PROFILE = ColorProfile(
 )
 
 
-class LuminaAppContext:
+class VibranceFlowAppContext:
     def __init__(self) -> None:
         self.profiles = ProfileManager()
         self.display = WindowsDisplayManager()
         self.audio = create_audio_manager()
-        self.engine = LuminaEngine(self.display, self.profiles, audio=self.audio)
+        self.engine = VibranceFlowEngine(self.display, self.profiles, audio=self.audio)
         self._schedule_main: Callable[[Callable[[], None]], None] | None = None
         self._remote: RemoteServer | None = None
         self._last_firewall_warning: str | None = None
+        self._remote_autostart_error: str | None = None
         self._ui_sync_callbacks: list[Callable[[], None]] = []
         self._pairing_close_callbacks: list[Callable[[], None]] = []
         if self.profiles.settings.observer_enabled:
@@ -51,8 +58,10 @@ class LuminaAppContext:
         if self.profiles.settings.keep_remote_port_open:
             try:
                 self.ensure_remote_server()
-            except Exception:
-                logger.debug("Could not auto-start remote server", exc_info=True)
+                self._remote_autostart_error = None
+            except Exception as e:
+                self._remote_autostart_error = str(e)
+                logger.warning("Could not auto-start remote server: %s", e, exc_info=True)
 
     def on_ui_sync(self, callback: Callable[[], None]) -> None:
         self._ui_sync_callbacks.append(callback)
@@ -103,6 +112,18 @@ class LuminaAppContext:
         return self._remote is not None and self._remote.is_running
 
     @property
+    def remote_is_listening(self) -> bool:
+        return self._remote is not None and self._remote.is_listening
+
+    @property
+    def remote_last_error(self) -> str | None:
+        if self._remote_autostart_error:
+            return self._remote_autostart_error
+        if self._remote is None:
+            return None
+        return self._remote.last_start_error
+
+    @property
     def remote_client_count(self) -> int:
         if self._remote is None:
             return 0
@@ -114,9 +135,7 @@ class LuminaAppContext:
             return {}
         return self._remote.pairing_payload
 
-    def ensure_remote_server(self) -> RemoteServer:
-        if self._schedule_main is None:
-            raise RuntimeError("UI scheduler not attached")
+    def _ensure_remote_instance(self) -> RemoteServer:
         if self._remote is None:
             handler = RemoteCommandHandler(
                 get_state=self._remote_get_state,
@@ -130,11 +149,54 @@ class LuminaAppContext:
                 on_main_thread=self._schedule_main,
                 on_paired=self._notify_pairing_complete,
             )
-        if not self._remote.is_running:
-            warn = ensure_firewall_rule(self._remote.port)
-            self._remote.start()
-            if warn:
-                self._last_firewall_warning = warn
+        return self._remote
+
+    def _start_remote_listening(self) -> str | None:
+        remote = self._ensure_remote_instance()
+        if remote.is_listening:
+            return None
+        if is_port_in_use(remote.port):
+            raise PortInUseError(
+                f"Port {remote.port} is already in use. "
+                "Close the other VibranceFlow or any app using this port."
+            )
+        warn = ensure_firewall_rule(remote.port)
+        remote.restart()
+        if not remote.wait_until_ready(5.0):
+            err = remote.last_start_error or "Remote server did not start listening."
+            raise RemoteStartError(err)
+        return warn
+
+    def ensure_remote_server(self) -> RemoteServer:
+        if self._schedule_main is None:
+            raise RuntimeError("UI scheduler not attached")
+        dep_err = verify_remote_dependencies()
+        if dep_err:
+            raise RemoteStartError(dep_err)
+        warn = self._start_remote_listening()
+        if warn:
+            self._last_firewall_warning = warn
+        self._remote_autostart_error = None
+        remote = self._remote
+        if remote is None:
+            raise RemoteStartError("Remote server was not initialized.")
+        return remote
+
+    def prepare_pairing_session(self, *, persist_keep_port: bool = True) -> RemoteServer:
+        """Start or restart the LAN server for Pair Mobile (works with keep-port unchecked)."""
+        if self._schedule_main is None:
+            raise RuntimeError("UI scheduler not attached")
+        dep_err = verify_remote_dependencies()
+        if dep_err:
+            raise RemoteStartError(dep_err)
+        warn = self._start_remote_listening()
+        assert self._remote is not None
+        self._remote.refresh_pairing_pin()
+        if warn:
+            self._last_firewall_warning = warn
+        if persist_keep_port and not self.profiles.settings.keep_remote_port_open:
+            self._persist_keep_port_setting(True)
+        self._notify_ui_sync()
         return self._remote
 
     def consume_firewall_warning(self) -> str | None:
@@ -222,6 +284,12 @@ class LuminaAppContext:
             "sliders": self._current_sliders_dict(),
             "audio": self._current_audio_dict(audio_snapshot),
             "programs": programs,
+            "remote": {
+                "listening": self.remote_is_listening,
+                "client_count": self.remote_client_count,
+                "last_error": self.remote_last_error,
+                "nvapi_available": self.display.nvapi_available,
+            },
         }
 
     def _current_sliders_dict(self) -> dict[str, float | int]:
@@ -296,7 +364,7 @@ class LuminaAppContext:
             self.engine.stop()
         self._notify_ui_sync()
 
-    def set_keep_remote_port_open(self, enabled: bool) -> None:
+    def _persist_keep_port_setting(self, enabled: bool) -> None:
         settings = self.profiles.settings
         self.profiles.update_settings(
             AppSettings(
@@ -311,10 +379,31 @@ class LuminaAppContext:
                 keep_remote_port_open=enabled,
             )
         )
-        if enabled:
-            self.ensure_remote_server()
-        else:
-            self.stop_remote_server()
+
+    def set_keep_remote_port_open(self, enabled: bool) -> None:
+        settings = self.profiles.settings
+        self._persist_keep_port_setting(enabled)
+        try:
+            if enabled:
+                self.ensure_remote_server()
+            else:
+                self.stop_remote_server()
+        except Exception:
+            if enabled:
+                self.profiles.update_settings(
+                    AppSettings(
+                        desktop_vibrance=settings.desktop_vibrance,
+                        desktop_brightness=settings.desktop_brightness,
+                        desktop_contrast=settings.desktop_contrast,
+                        desktop_gamma=settings.desktop_gamma,
+                        desktop_hue=settings.desktop_hue,
+                        observer_enabled=settings.observer_enabled,
+                        affect_primary_only=settings.affect_primary_only,
+                        autostart=settings.autostart,
+                        keep_remote_port_open=False,
+                    )
+                )
+            raise
         self._notify_ui_sync()
 
     def _merge_settings(self, **kwargs) -> AppSettings:

@@ -1,4 +1,4 @@
-"""Running process list — Toolhelp32 via ctypes (no psutil)."""
+"""Running process list - Toolhelp32 via ctypes (no psutil)."""
 
 from __future__ import annotations
 

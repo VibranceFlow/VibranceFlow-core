@@ -1,4 +1,4 @@
-"""Windows display manager — GDI32 + NVAPI."""
+"""Windows display manager - GDI32 + NVAPI."""
 
 from __future__ import annotations
 
@@ -99,9 +99,18 @@ class WindowsDisplayManager:
         apply_primary_gamma(ramp)
 
     def apply_profile(self, profile: ColorProfile) -> None:
-        self.set_gamma_ramp(profile.brightness, profile.contrast, profile.gamma)
-        self.set_vibrance(profile.vibrance)
-        self.set_hue(profile.hue)
+        try:
+            self.set_gamma_ramp(profile.brightness, profile.contrast, profile.gamma)
+        except Exception as e:
+            logger.error("Failed to apply gamma ramp: %s", e)
+        try:
+            self.set_vibrance(profile.vibrance)
+        except Exception as e:
+            logger.error("Failed to apply vibrance: %s", e)
+        try:
+            self.set_hue(profile.hue)
+        except Exception as e:
+            logger.error("Failed to apply hue: %s", e)
 
     def restore_defaults(self) -> None:
         apply_primary_gamma(self._baseline.gamma_ramp)

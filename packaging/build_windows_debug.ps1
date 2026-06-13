@@ -1,4 +1,4 @@
-# Build VibranceFlow Windows executable with Nuitka (requires Poetry + packaging).
+# Debug build: console visible + shared Nuitka flags (capture tracebacks).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
@@ -10,14 +10,12 @@ poetry install --with packaging
 poetry run python -m nuitka `
   --standalone `
   --onefile `
-  --windows-console-mode=disable `
+  --windows-console-mode=force `
   --assume-yes-for-downloads `
   --output-dir=dist `
-  --output-filename=VibranceFlow `
-  @((Get-NuitkaVersionMetadataArgs)) `
+  --output-filename=VibranceFlow-debug `
   @NuitkaCommonArgs `
   @((Get-NuitkaIconArg)) `
   gui_main.py
 
-Write-ExecutableSha256 -ExePath (Join-Path $Root "dist\VibranceFlow.exe")
-Write-Host "Build finished. See dist\VibranceFlow.exe"
+Write-Host "Debug build finished. Run: .\dist\VibranceFlow-debug.exe"

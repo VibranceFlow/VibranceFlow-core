@@ -49,6 +49,7 @@ def build_response(
     msg_id: str | None = None,
     state: dict[str, Any] | None = None,
     error: str | None = None,
+    error_code: str | None = None,
 ) -> str:
     body: dict[str, Any] = {"v": PROTOCOL_VERSION, "ok": ok}
     if msg_id:
@@ -57,4 +58,6 @@ def build_response(
         body["state"] = state
     if error:
         body["error"] = error
+    if error_code:
+        body["error_code"] = error_code
     return json.dumps(body, separators=(",", ":"))

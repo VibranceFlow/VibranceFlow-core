@@ -23,18 +23,64 @@ Thanks for taking the time to contribute.
 
 5. Run `python gui_main.py` (GUI) or `python main.py` (CLI engine).
 
+### Remote / pairing (dev)
+
+```powershell
+# With GUI open (Pair Mobile or keep port on):
+poetry run python scripts/diagnose_lan_remote.py
+
+poetry run python scripts/test_remote_boot.py
+poetry run python scripts/test_prepare_pairing.py
+poetry run python scripts/test_disconnect_clients.py
+poetry run python scripts/verify_protocol_v1.py
+
+# PIN like the Android app (use code from Pair Mobile):
+poetry run python scripts/test_pair_pin_client.py --host 192.168.1.2 --pin 123456
+
+# Fernet session (Pair Mobile -> Copy JSON -> pairing.json):
+poetry run python scripts/ws_remote_client.py --pairing pairing.json --demo
+```
+
+Cross-repo Fernet check (run export in **VibranceFlow-mobile** first):
+
+```powershell
+cd ..\VibranceFlow-mobile
+npx tsx scripts/test-fernet-cmds-export.ts
+cd ..\VibranceFlow-core
+poetry run python scripts/test_fernet_cmds.py
+```
+
+- Pair Mobile starts the server via `prepare_pairing_session()`; firewall UAC is optional (**Allow in Firewall** in the dialog).
+- Do not run the full app as administrator for remote testing - only the firewall helper may request elevation.
+- Frozen builds log to `%APPDATA%\VibranceFlow\app.log` (override with `VIBRANCEFLOW_LOG`).
+- **Mobile APK compatibility:** core changes that keep LAN protocol **v1** (port 8765, Fernet wire, commands) do not require a new APK. See [VibranceFlow-mobile/docs/CORE_APK_COMPATIBILITY.md](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
+
 ## Repository layout (this repo)
 
 | Path | Role |
 |------|------|
 | `core/` | Engine, profiles, foreground window monitor |
 | `core/bindings/` | GDI32 / NVAPI via ctypes |
-| `core/remote/` | LAN WebSocket server, Fernet, PIN pairing, firewall helper |
+| `core/remote/` | LAN WebSocket server, Fernet, PIN/QR pairing, firewall helper |
+| `core/single_instance.py` | Windows mutex - one GUI instance |
 | `ui/` | CustomTkinter GUI, tray, process picker, Pair Mobile dialog |
+| `ui/window_chrome.py` | Non-maximizable windowed mode |
+| `ui/layout.py` | Screen-aware window / pairing dialog sizing |
 | `gui_main.py` | GUI entry point |
 | `main.py` | CLI entry point |
+| `packaging/` | Nuitka Windows builds; see [packaging/README.md](packaging/README.md) |
+| `docs/FALSE_POSITIVE_RUNBOOK.md` | Maintainer AV false-positive checklist |
 
 Architecture write-ups, PoC scripts, and platform experiments are maintained in [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC).
+
+## Packaging and releases
+
+- Windows `.exe`: `poetry install --with packaging` then `.\packaging\build_windows.ps1`
+- **Brand icons:** commit `ui/Logos/PNG/app_logo.png` and `ui/Logos/ICO/app_logo.ico` (GUI + Nuitka). Loader: `ui/brand_assets.py`.
+- Optional placeholders only: `poetry run python scripts/generate_brand_assets.py` (writes `logo.png` / `logo.ico` - do not use as primary)
+- CI build: `.github/workflows/build-windows.yml`
+- Public release: push tag `vX.Y.Z` or run `.github/workflows/release-windows.yml`
+- False positives (unsigned builds): [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)
 
 ## Guidelines
 
@@ -67,8 +113,8 @@ Please include:
 | Repo | Role |
 |------|------|
 | [VibranceFlow-PoC](https://github.com/VibranceFlow/VibranceFlow-PoC) | Docs and validation scripts |
-| [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile) | Mobile control (planned) |
-| [VibranceFlow-web](https://github.com/VibranceFlow/VibranceFlow-web) | Web site (planned) |
+| [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile) | Android/iOS LAN remote |
+| [VibranceFlow-web](https://github.com/VibranceFlow/VibranceFlow-web) | Landing site |
 
 ## Questions
 

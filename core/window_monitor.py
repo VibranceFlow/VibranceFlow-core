@@ -1,4 +1,4 @@
-"""Foreground window monitor — pure ctypes, no psutil."""
+"""Foreground window monitor - pure ctypes, no psutil."""
 
 from __future__ import annotations
 

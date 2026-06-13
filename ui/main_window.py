@@ -1,4 +1,4 @@
-"""VibranceFlow main window — compact layout."""
+"""VibranceFlow main window - compact layout."""
 
 from __future__ import annotations
 
@@ -7,9 +7,10 @@ import tkinter.messagebox as messagebox
 import customtkinter as ctk
 
 from core.models import AudioSettings, ColorProfile
-from ui.app_context import LuminaAppContext
+from ui.app_context import VibranceFlowAppContext
 from ui.brand_assets import ico_path, load_header_ctk_image
 from ui.layout import center_on_screen, compute_window_sizes, set_window_size_keep_position
+from ui.window_chrome import apply_windowed_chrome
 from ui.pairing_dialog import PairingDialog
 from ui.process_picker import ProcessPickerDialog
 from ui.theme import (
@@ -34,7 +35,7 @@ ctk.set_default_color_theme("dark-blue")
 
 
 class VibranceFlowWindow(ctk.CTk):
-    def __init__(self, ctx: LuminaAppContext, *, start_hidden: bool = False) -> None:
+    def __init__(self, ctx: VibranceFlowAppContext, *, start_hidden: bool = False) -> None:
         super().__init__()
         self._ctx = ctx
         self._selected_exe: str | None = None
@@ -57,7 +58,7 @@ class VibranceFlowWindow(ctk.CTk):
         self.configure(fg_color=BG_DARK)
         cw, ch = self._size_compact
         ew, eh = self._size_expanded
-        self.resizable(False, False)
+        apply_windowed_chrome(self, resizable=False)
         self.minsize(cw, ch)
         self.maxsize(ew, eh)
         self._apply_window_icon()
@@ -475,7 +476,7 @@ class VibranceFlowWindow(ctk.CTk):
 
     def _on_pair_mobile(self) -> None:
         try:
-            if self._ctx.remote_is_running and self._ctx.remote_client_count > 0:
+            if self._ctx.remote_is_listening and self._ctx.remote_client_count > 0:
                 if messagebox.askyesno(
                     "Pair Mobile",
                     "A phone is already connected.\n\n"
@@ -484,9 +485,8 @@ class VibranceFlowWindow(ctk.CTk):
                     parent=self,
                 ):
                     self._ctx.disconnect_remote_clients(rotate_key=True)
-            if not self._ctx.remote_is_running:
-                self._ctx.ensure_remote_server()
-            PairingDialog(self, self._ctx)
+            server = self._ctx.prepare_pairing_session(persist_keep_port=True)
+            PairingDialog(self, self._ctx, server)
         except Exception as e:
             messagebox.showerror("Pair Mobile", str(e), parent=self)
 
@@ -605,15 +605,19 @@ class VibranceFlowWindow(ctk.CTk):
     def _on_keep_port_toggle(self) -> None:
         if self._updating_keep_port:
             return
-        self._ctx.set_keep_remote_port_open(self._chk_keep_port.get() == 1)
+        enabled = self._chk_keep_port.get() == 1
+        try:
+            self._ctx.set_keep_remote_port_open(enabled)
+        except Exception as e:
+            self._sync_keep_port_checkbox()
+            messagebox.showerror("Remote port", str(e), parent=self)
 
     def _sync_keep_port_checkbox(self) -> None:
-        running = self._ctx.remote_is_running
-        checked = self._chk_keep_port.get() == 1
-        if running == checked:
+        want = 1 if self._ctx.profiles.settings.keep_remote_port_open else 0
+        if self._chk_keep_port.get() == want:
             return
         self._updating_keep_port = True
-        if running:
+        if want:
             self._chk_keep_port.select()
         else:
             self._chk_keep_port.deselect()
@@ -690,7 +694,13 @@ class VibranceFlowWindow(ctk.CTk):
             self._engine_label.configure(text="○ Stopped", text_color=TEXT_MUTED)
         n = len(self._ctx.profiles.list_executables())
         focus = eng.active_executable or "—"
-        remote = " · remote on" if self._ctx.remote_is_running else ""
+        if self._ctx.remote_is_listening:
+            remote = " · remote on"
+        elif self._ctx.profiles.settings.keep_remote_port_open:
+            detail = self._ctx.remote_last_error
+            remote = f" · remote error ({detail})" if detail else " · remote error"
+        else:
+            remote = ""
         self._status_label.configure(text=f"{focus} · {n} profile(s){remote}")
 
     def _status_tick(self) -> None:

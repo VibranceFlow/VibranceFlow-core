@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""VibranceFlow — CLI engine entry point (no GUI)."""
+"""VibranceFlow - CLI engine entry point (no GUI)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import signal
 import sys
 
 from core.display_manager import WindowsDisplayManager
-from core.engine import LuminaEngine
+from core.engine import VibranceFlowEngine
 from core.profile_manager import ProfileManager
 
 logging.basicConfig(
@@ -17,7 +17,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-logger = logging.getLogger("lumina_sync")
+logger = logging.getLogger("vibranceflow")
 
 
 def main() -> int:
@@ -25,14 +25,14 @@ def main() -> int:
     executables = profiles.list_executables()
     if not executables:
         logger.warning(
-            "No profiles at %s — copy profiles.json.example and add games.",
+            "No profiles at %s - copy profiles.json.example and add games.",
             profiles.path,
         )
     else:
         logger.info("Profiles loaded: %s", ", ".join(executables))
 
     display = WindowsDisplayManager()
-    engine = LuminaEngine(display, profiles)
+    engine = VibranceFlowEngine(display, profiles)
 
     def _shutdown() -> None:
         if engine.is_running:

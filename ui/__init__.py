@@ -1,1 +1,1 @@
-"""Interface gráfica VibranceFlow."""
+"""VibranceFlow graphical user interface."""

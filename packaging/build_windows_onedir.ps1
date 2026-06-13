@@ -1,4 +1,4 @@
-# Build VibranceFlow Windows executable with Nuitka (requires Poetry + packaging).
+# Optional one-folder build for AV heuristic comparison (no onefile temp bootstrap).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
@@ -7,17 +7,18 @@ Set-Location $Root
 
 poetry install --with packaging
 
+$outName = "VibranceFlow-onedir"
 poetry run python -m nuitka `
   --standalone `
-  --onefile `
   --windows-console-mode=disable `
   --assume-yes-for-downloads `
   --output-dir=dist `
-  --output-filename=VibranceFlow `
+  --output-filename=$outName `
   @((Get-NuitkaVersionMetadataArgs)) `
   @NuitkaCommonArgs `
   @((Get-NuitkaIconArg)) `
   gui_main.py
 
-Write-ExecutableSha256 -ExePath (Join-Path $Root "dist\VibranceFlow.exe")
-Write-Host "Build finished. See dist\VibranceFlow.exe"
+$exePath = Join-Path $Root "dist\$outName.dist\$outName.exe"
+Write-ExecutableSha256 -ExePath $exePath
+Write-Host "One-folder build finished. Run: $exePath"

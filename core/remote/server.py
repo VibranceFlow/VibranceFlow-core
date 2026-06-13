@@ -9,7 +9,11 @@ import threading
 from collections.abc import Callable
 from typing import Any
 
+import websockets
+from websockets.asyncio.server import serve
+
 from core.remote.crypto import decrypt_json, encrypt_json, generate_key
+from core.remote.health import format_start_error
 from core.remote.handlers import RemoteCommandHandler
 from core.remote.pairing import DEFAULT_PORT, build_pairing_payload, get_lan_ipv4
 from core.remote.pin import PairingPinManager, build_pair_response, parse_pair_request
@@ -41,10 +45,20 @@ class RemoteServer:
         self._server: Any = None
         self._clients: set[Any] = set()
         self._lock = threading.Lock()
+        self._listening = threading.Event()
+        self._last_start_error: str | None = None
 
     @property
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
+
+    @property
+    def is_listening(self) -> bool:
+        return self.is_running and self._listening.is_set()
+
+    @property
+    def last_start_error(self) -> str | None:
+        return self._last_start_error
 
     @property
     def pairing_payload(self) -> dict[str, Any]:
@@ -76,49 +90,75 @@ class RemoteServer:
         with self._lock:
             self._key = generate_key()
             self._pin.regenerate()
-        logger.info("Pairing key rotated — connected phones must re-pair")
+        logger.info("Pairing key rotated - connected phones must re-pair")
+        self._disconnect_all_clients()
+
+    def disconnect_all_clients(self) -> None:
+        """Close all connected WebSocket clients without stopping the server."""
         self._disconnect_all_clients()
 
     def start(self) -> None:
         if self.is_running:
-            return
+            if self.is_listening:
+                return
+            self.stop()
+        self._last_start_error = None
+        self._listening.clear()
         self._host = get_lan_ipv4()
-        self._thread = threading.Thread(target=self._run_loop, name="LuminaRemoteWS", daemon=True)
+        self._thread = threading.Thread(target=self._run_loop, name="VibranceFlowRemoteWS", daemon=True)
         self._thread.start()
         logger.info("Remote server starting on %s:%s", self._host, self._port)
 
+    def restart(self) -> None:
+        self.stop()
+        self._clear_thread_refs()
+        self.start()
+
+    def wait_until_ready(self, timeout: float = 3.0) -> bool:
+        if self._listening.wait(timeout):
+            return True
+        if not self.is_running and self._last_start_error is None:
+            self._last_start_error = "Remote server thread exited before listening."
+        return False
+
     def stop(self) -> None:
-        if self._loop is None or self._thread is None:
+        if self._thread is None:
             return
 
-        async def _shutdown() -> None:
-            notice = encrypt_json(
-                self._key,
-                '{"v":1,"ok":false,"error":"port_closed","event":"port_closed"}',
-            )
-            for ws in list(self._clients):
-                try:
-                    await ws.send(notice)
-                except Exception:
-                    pass
-                try:
-                    await ws.close()
-                except Exception:
-                    pass
-            self._clients.clear()
-            if self._server is not None:
-                self._server.close()
-                await self._server.wait_closed()
+        if self._loop is not None:
+            async def _shutdown() -> None:
+                notice = encrypt_json(
+                    self._key,
+                    '{"v":1,"ok":false,"error":"port_closed","event":"port_closed"}',
+                )
+                for ws in list(self._clients):
+                    try:
+                        await ws.send(notice)
+                    except Exception as e:
+                        logger.debug("Could not send port_closed to client: %s", e)
+                    try:
+                        await ws.close()
+                    except Exception as e:
+                        logger.debug("Could not close client socket: %s", e)
+                self._clients.clear()
+                if self._server is not None:
+                    self._server.close()
+                    await self._server.wait_closed()
 
-        try:
-            asyncio.run_coroutine_threadsafe(_shutdown(), self._loop).result(timeout=8)
-        except Exception as e:
-            logger.warning("Remote server shutdown: %s", e)
+            try:
+                asyncio.run_coroutine_threadsafe(_shutdown(), self._loop).result(timeout=8)
+            except Exception as e:
+                logger.warning("Remote server shutdown: %s", e)
+
         if self._thread is not None:
             self._thread.join(timeout=8)
+        self._clear_thread_refs()
+
+    def _clear_thread_refs(self) -> None:
         self._thread = None
         self._loop = None
         self._server = None
+        self._listening.clear()
 
     def _disconnect_all_clients(self) -> None:
         if self._loop is None:
@@ -131,8 +171,8 @@ class RemoteServer:
 
         try:
             asyncio.run_coroutine_threadsafe(_close(), self._loop).result(timeout=3)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Could not disconnect remote clients: %s", e)
 
     def _run_loop(self) -> None:
         self._loop = asyncio.new_event_loop()
@@ -141,10 +181,13 @@ class RemoteServer:
             self._loop.run_until_complete(self._serve())
         except RuntimeError as e:
             if "Event loop stopped" not in str(e):
+                self._last_start_error = format_start_error(e)
                 logger.exception("Remote server loop crashed")
-        except Exception:
+        except Exception as e:
+            self._last_start_error = format_start_error(e)
             logger.exception("Remote server loop crashed")
         finally:
+            self._listening.clear()
             try:
                 pending = asyncio.all_tasks(self._loop)
                 for task in pending:
@@ -159,8 +202,15 @@ class RemoteServer:
             logger.info("Remote server stopped")
 
     async def _serve(self) -> None:
-        import websockets
-        from websockets.server import serve
+        async def _process_request(connection: Any, request: Any) -> None:
+            peer = getattr(connection, "remote_address", None)
+            logger.info(
+                "WS handshake from %s: %s (Origin=%s)",
+                peer,
+                getattr(request, "path", "?"),
+                request.headers.get("Origin", "-") if hasattr(request, "headers") else "-",
+            )
+            return None
 
         async def _handler(websocket: Any) -> None:
             peer = getattr(websocket, "remote_address", None)
@@ -179,15 +229,16 @@ class RemoteServer:
                             await websocket.close(1009, "message too large")
                             break
 
-                    reply = await self._process_message(text)
+                    reply = await self._process_message(text, peer=peer)
                     if reply is not None:
                         await websocket.send(reply)
+            except websockets.exceptions.ConnectionClosed:
+                logger.info("Remote client disconnected from %s", peer)
             except Exception:
-                logger.debug("client disconnected", exc_info=True)
+                logger.warning("Remote client session error from %s", peer, exc_info=True)
             finally:
                 self._clients.discard(websocket)
 
-        # Listen on all interfaces so phones can reach the advertised LAN IP.
         bind_host = "0.0.0.0"
         self._server = await serve(
             _handler,
@@ -197,6 +248,8 @@ class RemoteServer:
             ping_interval=30,
             ping_timeout=10,
             origins=None,
+            compression=None,
+            process_request=_process_request,
         )
         logger.info(
             "Remote server listening on %s:%s (LAN IP %s)",
@@ -204,16 +257,22 @@ class RemoteServer:
             self._port,
             self._host,
         )
+        self._listening.set()
         await self._server.wait_closed()
 
-    def _try_pair_with_pin(self, wire: str) -> str | None:
+    def _try_pair_with_pin(self, wire: str, *, peer: Any = None) -> str | None:
         req = parse_pair_request(wire)
         if req is None:
             return None
         pin = str(req.get("pin", ""))
         with self._lock:
             if not self._pin.verify(pin):
-                return build_pair_response(ok=False, error="invalid or expired code")
+                err = self._pin.pair_error_after_fail()
+                if err == "too_many_attempts":
+                    logger.warning("Pair PIN lockout - rejected attempt from %s", peer)
+                else:
+                    logger.warning("Pair PIN rejected from %s", peer)
+                return build_pair_response(ok=False, error=err)
             key = self._key
             host = self._host
             port = self._port
@@ -222,9 +281,9 @@ class RemoteServer:
             self._on_paired()
         return build_pair_response(ok=True, host=host, port=port, key=key)
 
-    async def _process_message(self, wire: str) -> str | None:
+    async def _process_message(self, wire: str, *, peer: Any = None) -> str | None:
         text = wire.strip()
-        pair_reply = self._try_pair_with_pin(text)
+        pair_reply = self._try_pair_with_pin(text, peer=peer)
         if pair_reply is not None:
             return pair_reply
 
@@ -233,7 +292,7 @@ class RemoteServer:
             plaintext = decrypt_json(key, text)
         except ValueError:
             logger.warning(
-                "Rejected remote frame (decrypt failed, len=%s) — phone key may be stale after New code",
+                "Rejected remote frame (decrypt failed, len=%s) - phone key may be stale after New code",
                 len(text),
             )
             return encrypt_json(key, '{"v":1,"ok":false,"error":"unauthorized"}')

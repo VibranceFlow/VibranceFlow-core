@@ -1,4 +1,4 @@
-"""NVAPI — Digital Vibrance and hue (ctypes / nvapi64.dll)."""
+"""NVAPI - Digital Vibrance and hue (ctypes / nvapi64.dll)."""
 
 from __future__ import annotations
 

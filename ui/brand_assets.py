@@ -1,37 +1,87 @@
-"""Brand icons from ui/Logos."""
+"""Brand icons from ui/Logos (dev + Nuitka frozen)."""
 
 from __future__ import annotations
 
+import logging
+import os
+import sys
 from pathlib import Path
 
 from PIL import Image
 
-_LOGOS = Path(__file__).resolve().parent / "Logos"
-_ICO_DIR = _LOGOS / "ICO"
-_PNG_DIR = _LOGOS / "PNG"
+logger = logging.getLogger(__name__)
+
+_PNG_PREFERRED = (
+    "app_logo.png",
+    "final.png",
+    "VibranceFlow.png",
+    "logo.png",
+    "icon.png",
+)
+_ICO_PREFERRED = (
+    "app_logo.ico",
+    "logo.ico",
+    "VibranceFlow.ico",
+    "icon.ico",
+)
+
+
+def logos_root() -> Path:
+    """Resolve ui/Logos in source tree and Nuitka onefile/standalone builds."""
+    candidates: list[Path] = []
+
+    module_dir = Path(__file__).resolve().parent
+    candidates.append(module_dir / "Logos")
+
+    if getattr(sys, "frozen", False):
+        onefile_dir = os.environ.get("NUITKA_ONEFILE_DIRECTORY")
+        if onefile_dir:
+            candidates.append(Path(onefile_dir) / "ui" / "Logos")
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "ui" / "Logos")
+
+    seen: set[Path] = set()
+    for root in candidates:
+        try:
+            resolved = root.resolve()
+        except OSError:
+            continue
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if (resolved / "PNG").is_dir() or (resolved / "ICO").is_dir():
+            return resolved
+
+    return module_dir / "Logos"
+
+
+def _first_in_dir(directory: Path, names: tuple[str, ...]) -> Path | None:
+    if not directory.is_dir():
+        return None
+    for name in names:
+        path = directory / name
+        if path.is_file():
+            return path
+    return None
 
 
 def ico_path() -> Path | None:
-    for name in ("VibranceFlow.ico", "LuminaSync.ico", "luminasync.ico", "icon.ico"):
-        p = _ICO_DIR / name
-        if p.is_file():
-            return p
-    for p in _ICO_DIR.glob("*.ico"):
-        return p
-    for p in _LOGOS.glob("*.ico"):
-        return p
+    root = logos_root()
+    found = _first_in_dir(root / "ICO", _ICO_PREFERRED)
+    if found:
+        return found
+    for path in sorted(root.glob("*.ico")):
+        return path
     return None
 
 
 def header_png_path() -> Path | None:
-    for name in ("VibranceFlow.png", "LuminaSync.png", "logo.png", "icon.png"):
-        p = _PNG_DIR / name
-        if p.is_file():
-            return p
-    for p in _PNG_DIR.glob("*.png"):
-        return p
-    for p in _LOGOS.glob("*.png"):
-        return p
+    root = logos_root()
+    found = _first_in_dir(root / "PNG", _PNG_PREFERRED)
+    if found:
+        return found
+    for path in sorted(root.glob("*.png")):
+        return path
     return None
 
 
@@ -43,6 +93,7 @@ def load_tray_image() -> Image.Image:
     if path and path.suffix.lower() == ".ico":
         img = Image.open(path)
         return img.convert("RGBA").resize((64, 64), Image.Resampling.LANCZOS)
+    logger.warning("Brand icon not found under %s; using fallback", logos_root())
     return _fallback_icon()
 
 
@@ -51,6 +102,7 @@ def load_header_ctk_image(size: tuple[int, int] = (28, 28)):
 
     path = header_png_path()
     if not path:
+        logger.warning("Header logo PNG not found under %s", logos_root())
         return None
     pil = Image.open(path).convert("RGBA")
     pil = pil.resize(size, Image.Resampling.LANCZOS)

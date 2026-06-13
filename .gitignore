@@ -15,7 +15,16 @@ env/
 *.user
 profiles.json
 
-# Local PoC scripts (keep remote test client)
+# Local PoC scripts (keep remote test / diagnose clients)
 scripts/*
 !scripts/ws_remote_client.py
+!scripts/diagnose_lan_remote.py
+!scripts/test_pair_pin_client.py
+!scripts/test_remote_boot.py
+!scripts/test_prepare_pairing.py
+!scripts/test_fernet_cmds.py
+!scripts/verify_protocol_v1.py
+!scripts/test_disconnect_clients.py
+!scripts/generate_brand_assets.py
+pairing.json
 .cursor/
