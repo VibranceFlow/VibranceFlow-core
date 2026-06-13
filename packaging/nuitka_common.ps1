@@ -31,7 +31,7 @@ function Get-NuitkaIconArg {
 }
 
 function Get-NuitkaVersionMetadataArgs {
-    $version = if ($env:VIBRANCEFLOW_VERSION) { $env:VIBRANCEFLOW_VERSION } else { "1.0.0" }
+    $version = if ($env:VIBRANCEFLOW_VERSION) { $env:VIBRANCEFLOW_VERSION } else { "1.1.0" }
     $company = if ($env:VIBRANCEFLOW_COMPANY) { $env:VIBRANCEFLOW_COMPANY } else { "VibranceFlow" }
     $product = if ($env:VIBRANCEFLOW_PRODUCT) { $env:VIBRANCEFLOW_PRODUCT } else { "VibranceFlow" }
     $description = if ($env:VIBRANCEFLOW_FILE_DESCRIPTION) {
