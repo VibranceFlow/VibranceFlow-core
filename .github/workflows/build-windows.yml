@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     env:
-      VIBRANCEFLOW_VERSION: "1.0.0"
+      VIBRANCEFLOW_VERSION: "1.1.0"
       VIBRANCEFLOW_COMPANY: "VibranceFlow"
       VIBRANCEFLOW_PRODUCT: "VibranceFlow"
       VIBRANCEFLOW_FILE_DESCRIPTION: "Per-game color and audio profile switcher for Windows"
