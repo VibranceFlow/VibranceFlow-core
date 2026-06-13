@@ -3,8 +3,9 @@
 ## Windows (Nuitka + optional Microsoft Store)
 
 1. Install Poetry and packaging group: `poetry install --with packaging`
-2. Brand assets (committed): `ui/Logos/PNG/logo.png`, `ui/Logos/ICO/logo.ico`
-   - Regenerate after logo changes: `poetry run python scripts/generate_brand_assets.py`
+2. Brand assets (committed): `ui/Logos/PNG/app_logo.png`, `ui/Logos/ICO/app_logo.ico`
+   - Legacy placeholder generator: `scripts/generate_brand_assets.py` (writes `logo.png` / `logo.ico`)
+   - Regenerate placeholders after logo changes: `poetry run python scripts/generate_brand_assets.py`
 3. Build: `.\packaging\build_windows.ps1`
 4. Output: `dist/VibranceFlow.exe` + `dist/VibranceFlow.exe.sha256`
 5. **Microsoft Store (future / paid):** wrap the built `.exe` with [MSIX Packaging Tool](https://learn.microsoft.com/en-us/windows/msix/packaging-tool/tool-overview), produce `.msixupload`, submit via Partner Center (~US$19 one-time fee + review).
