@@ -50,6 +50,14 @@ class PairingPinManager:
         self._register_fail(now)
         return False
 
+    def pair_error_after_fail(self) -> str:
+        """Stable wire error after a failed ``verify`` (no PIN in message)."""
+        if time.monotonic() < self._locked_until:
+            return "too_many_attempts"
+        if not self.is_active():
+            return "invalid or expired code"
+        return "invalid or expired code"
+
     def consume(self) -> None:
         self._pin = ""
         self._expires_at = 0.0

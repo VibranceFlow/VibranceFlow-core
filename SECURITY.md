@@ -49,4 +49,6 @@ Open a GitHub issue on [VibranceFlow-core](https://github.com/VibranceFlow/Vibra
 
 **Do not** paste real pairing `key` values, PIN codes, or `pairing.json` contents in public issues.
 
+Error handling reference: [docs/ERROR_HANDLING.md](docs/ERROR_HANDLING.md).
+
 For release integrity and antivirus false positives, see [README — Security](README.md) and [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md).

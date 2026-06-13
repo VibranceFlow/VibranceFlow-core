@@ -8,6 +8,7 @@ from collections.abc import Callable
 from typing import Any
 
 from core.models import AudioSettings, ColorProfile
+from core.profile_manager import ProfileSaveError
 from core.remote.protocol import ProtocolError, build_response, parse_request
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class RemoteCommandHandler:
         try:
             req = parse_request(plaintext)
         except ProtocolError as e:
-            return build_response(ok=False, error=str(e))
+            return build_response(ok=False, error=str(e), error_code=e.code)
 
         msg_id = req.get("id")
         cmd = req["cmd"]
@@ -87,10 +88,25 @@ class RemoteCommandHandler:
 
             return build_response(ok=False, msg_id=msg_id, error="unhandled command")
         except ProtocolError as e:
-            return build_response(ok=False, msg_id=msg_id, error=str(e))
-        except Exception as e:
+            return build_response(
+                ok=False, msg_id=msg_id, error=str(e), error_code=e.code
+            )
+        except ProfileSaveError as e:
+            logger.error("remote command could not persist profiles: %s", e)
+            return build_response(
+                ok=False,
+                msg_id=msg_id,
+                error="profile save failed",
+                error_code="profile_save_failed",
+            )
+        except Exception:
             logger.exception("remote command failed: %s", cmd)
-            return build_response(ok=False, msg_id=msg_id, error="internal error")
+            return build_response(
+                ok=False,
+                msg_id=msg_id,
+                error="internal error",
+                error_code="internal_error",
+            )
 
 
 def _as_bool(value: Any, *, field: str) -> bool:
