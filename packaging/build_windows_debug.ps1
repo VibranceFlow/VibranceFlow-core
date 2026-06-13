@@ -6,18 +6,16 @@ Set-Location $Root
 . (Join-Path $PSScriptRoot "nuitka_common.ps1")
 
 poetry install --with packaging
-$Ico = Get-ChildItem -Path "ui\Logos\ICO\*.ico" -ErrorAction SilentlyContinue | Select-Object -First 1
-$IconArg = @()
-if ($Ico) { $IconArg = @("--windows-icon-from-ico=$($Ico.FullName)") }
 
 poetry run python -m nuitka `
+  --standalone `
   --onefile `
   --windows-console-mode=force `
   --assume-yes-for-downloads `
   --output-dir=dist `
   --output-filename=VibranceFlow-debug `
   @NuitkaCommonArgs `
-  @IconArg `
+  @((Get-NuitkaIconArg)) `
   gui_main.py
 
 Write-Host "Debug build finished. Run: .\dist\VibranceFlow-debug.exe"
