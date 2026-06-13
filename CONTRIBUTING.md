@@ -76,7 +76,8 @@ Architecture write-ups, PoC scripts, and platform experiments are maintained in 
 ## Packaging and releases
 
 - Windows `.exe`: `poetry install --with packaging` then `.\packaging\build_windows.ps1`
-- Brand assets: `poetry run python scripts/generate_brand_assets.py`
+- **Brand icons:** commit `ui/Logos/PNG/app_logo.png` and `ui/Logos/ICO/app_logo.ico` (GUI + Nuitka). Loader: `ui/brand_assets.py`.
+- Optional placeholders only: `poetry run python scripts/generate_brand_assets.py` (writes `logo.png` / `logo.ico` — do not use as primary)
 - CI build: `.github/workflows/build-windows.yml`
 - Public release: push tag `vX.Y.Z` or run `.github/workflows/release-windows.yml`
 - False positives (unsigned builds): [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)
