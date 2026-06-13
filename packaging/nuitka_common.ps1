@@ -1,6 +1,8 @@
 # Shared Nuitka flags for GUI + LAN remote (Windows). Dot-source from build scripts.
 $script:NuitkaCommonArgs = @(
+    "--lto=yes"
     "--enable-plugin=tk-inter"
+    "--enable-plugin=anti-bloat"
     "--include-package-data=customtkinter"
     "--include-data-dir=ui/Logos=ui/Logos"
     "--include-package=websockets"
@@ -10,7 +12,7 @@ $script:NuitkaCommonArgs = @(
     "--include-package=comtypes"
     "--include-package=pystray"
     "--include-package=PIL"
-    "--nofollow-import-to=comtypes.test,pulsectl"
+    "--nofollow-import-to=comtypes.test,pulsectl,unittest,pydoc,doctest,distutils"
 )
 
 function Get-NuitkaIconArg {
