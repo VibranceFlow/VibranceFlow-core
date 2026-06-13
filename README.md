@@ -50,6 +50,8 @@ All commands are encrypted on the LAN using Fernet payload encryption.
 - No telemetry backend is required for normal use.
 - Pairing keys stay local and can be rotated from the Pair Mobile dialog.
 
+Threat model and reporting: [SECURITY.md](SECURITY.md). Wire protocol (contributors): [docs/REMOTE_PROTOCOL.md](docs/REMOTE_PROTOCOL.md).
+
 ## 🛡️ Security, False Positives & Transparency
 
 VibranceFlow Core is packaged with **Nuitka** (Python to native code) as a Windows executable. The default public build is a **single-file `.exe`** (`--onefile`), which unpacks to a temporary folder on first launch — a common pattern that some antivirus heuristics flag on unsigned software.
