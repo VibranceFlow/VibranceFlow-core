@@ -27,11 +27,19 @@ VibranceFlow is fully standalone on Windows. The optional mobile companion acts 
 
 ## Download and install (Windows)
 
-1. Open the repository [**Releases**](https://github.com/VibranceFlow/VibranceFlow-core/releases) page.
-2. Download **both** `VibranceFlow.exe` and `VibranceFlow.exe.sha256` from the same release.
-3. Verify the SHA256 hash (see [Security](#-security-false-positives--transparency) below).
-4. Place `VibranceFlow.exe` in any folder (for example `C:\Program Files\VibranceFlow\`).
-5. Run `VibranceFlow.exe`.
+Official downloads live on GitHub Releases:
+
+| Build | Releases page |
+| --- | --- |
+| **Windows** (`VibranceFlow.exe`) | [github.com/VibranceFlow/VibranceFlow-core/releases](https://github.com/VibranceFlow/VibranceFlow-core/releases) |
+| **Android APK** (`vibranceflow-release.apk`) | [github.com/VibranceFlow/VibranceFlow-mobile/releases](https://github.com/VibranceFlow/VibranceFlow-mobile/releases) |
+
+Steps on Windows:
+
+1. Open **[VibranceFlow Core Releases](https://github.com/VibranceFlow/VibranceFlow-core/releases)**.
+2. Download the latest `VibranceFlow.exe` (and optionally `VibranceFlow.exe.sha256`) from that release.
+3. Place it in any folder (for example `C:\Program Files\VibranceFlow\`).
+4. Run `VibranceFlow.exe`.
 
 If Windows SmartScreen appears, choose **More info** and continue **only** after verifying the SHA256 hash matches the official release. Unsigned builds show an unknown publisher - that is expected until a commercial code-signing certificate is funded.
 
@@ -82,10 +90,10 @@ This project follows a strict transparency model:
 - zero analytics and zero telemetry
 - every release publishes `VibranceFlow.exe.sha256` for integrity verification
 
-VirusTotal references (maintainer-updated per release):
+Transparency — VirusTotal reports (for binaries built from CI for the releases above):
 
-- EXE scan: add the link from the latest [GitHub Release](https://github.com/VibranceFlow/VibranceFlow-core/releases) notes after upload
-- Maintainer runbook: [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)
+- **Windows** (`VibranceFlow.exe`): [VirusTotal](https://www.virustotal.com/gui/file/9ad23e5a5d2555c60e3d8461a95c34fe02b8760b6d3d9fd60fb354bea3d7f301)
+- **Android** (`vibranceflow-release.apk`): [VirusTotal](https://www.virustotal.com/gui/file/8418c3cde2d31a0a63a6c3e96488e57ee47f89e2833051e336440745f2c2bd49)
 
 Before trusting any downloaded executable, always verify integrity:
 
@@ -115,7 +123,7 @@ Modern software distribution has real platform tolls that are difficult for inde
 - Apple Developer Program: **US$99/year**
 - Google Play Store registration: **US$25** one-time
 
-<a href="https://ko-fi.com/fabio_monreal"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi" height="36" /></a>
+Support link: [Support VibranceFlow on Ko-fi](https://ko-fi.com/fabio_monreal)
 
 If community funding reaches these milestones, VibranceFlow binaries can be signed and published through official stores/channels (Microsoft, Apple, Google).  
 Until then, the focus remains: open-source, free access, transparent security practices, and reproducible local tooling.
