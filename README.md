@@ -115,7 +115,7 @@ Modern software distribution has real platform tolls that are difficult for inde
 - Apple Developer Program: **US$99/year**
 - Google Play Store registration: **US$25** one-time
 
-Support link: [Support VibranceFlow on Ko-fi](https://ko-fi.com/fabio_monreal)
+<a href="https://ko-fi.com/fabio_monreal"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi" height="36" /></a>
 
 If community funding reaches these milestones, VibranceFlow binaries can be signed and published through official stores/channels (Microsoft, Apple, Google).  
 Until then, the focus remains: open-source, free access, transparent security practices, and reproducible local tooling.
