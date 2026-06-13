@@ -9,7 +9,7 @@ import signal
 import sys
 
 from core.display_manager import WindowsDisplayManager
-from core.engine import LuminaEngine
+from core.engine import VibranceFlowEngine
 from core.profile_manager import ProfileManager
 
 logging.basicConfig(
@@ -17,7 +17,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%H:%M:%S",
 )
-logger = logging.getLogger("lumina_sync")
+logger = logging.getLogger("vibranceflow")
 
 
 def main() -> int:
@@ -32,7 +32,7 @@ def main() -> int:
         logger.info("Profiles loaded: %s", ", ".join(executables))
 
     display = WindowsDisplayManager()
-    engine = LuminaEngine(display, profiles)
+    engine = VibranceFlowEngine(display, profiles)
 
     def _shutdown() -> None:
         if engine.is_running:

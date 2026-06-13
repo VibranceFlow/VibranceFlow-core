@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "VibranceFlow-core"
-version = "0.1.0"
+version = "1.0.0"
 description = "Windows per-game color profiles with optional mobile remote control"
 authors = ["VibranceFlow"]
 readme = "README.md"

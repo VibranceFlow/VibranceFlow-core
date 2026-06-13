@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 EngineState = Literal["desktop", "profile"]
 
 
-class LuminaEngine:
+class VibranceFlowEngine:
     def __init__(
         self,
         display: WindowsDisplayManager,
@@ -52,7 +52,7 @@ class LuminaEngine:
         if self.is_running:
             return
         self._stop_event.clear()
-        self._thread = threading.Thread(target=self._run, name="LuminaEngine", daemon=True)
+        self._thread = threading.Thread(target=self._run, name="VibranceFlowEngine", daemon=True)
         self._thread.start()
         logger.info("Engine started (interval=%.1fs).", self._poll_interval)
 

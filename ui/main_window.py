@@ -7,7 +7,7 @@ import tkinter.messagebox as messagebox
 import customtkinter as ctk
 
 from core.models import AudioSettings, ColorProfile
-from ui.app_context import LuminaAppContext
+from ui.app_context import VibranceFlowAppContext
 from ui.brand_assets import ico_path, load_header_ctk_image
 from ui.layout import center_on_screen, compute_window_sizes, set_window_size_keep_position
 from ui.window_chrome import apply_windowed_chrome
@@ -35,7 +35,7 @@ ctk.set_default_color_theme("dark-blue")
 
 
 class VibranceFlowWindow(ctk.CTk):
-    def __init__(self, ctx: LuminaAppContext, *, start_hidden: bool = False) -> None:
+    def __init__(self, ctx: VibranceFlowAppContext, *, start_hidden: bool = False) -> None:
         super().__init__()
         self._ctx = ctx
         self._selected_exe: str | None = None

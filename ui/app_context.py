@@ -12,7 +12,7 @@ from tkinter import filedialog
 from core.audio_manager import AudioSnapshot, create_audio_manager
 from core.autostart import is_autostart_enabled, set_autostart
 from core.display_manager import WindowsDisplayManager
-from core.engine import LuminaEngine
+from core.engine import VibranceFlowEngine
 from core.models import AppSettings, AudioSettings, AudioState, ColorProfile
 from core.profile_manager import ProfileManager
 from core.remote.handlers import RemoteCommandHandler
@@ -37,12 +37,12 @@ DEFAULT_GAME_PROFILE = ColorProfile(
 )
 
 
-class LuminaAppContext:
+class VibranceFlowAppContext:
     def __init__(self) -> None:
         self.profiles = ProfileManager()
         self.display = WindowsDisplayManager()
         self.audio = create_audio_manager()
-        self.engine = LuminaEngine(self.display, self.profiles, audio=self.audio)
+        self.engine = VibranceFlowEngine(self.display, self.profiles, audio=self.audio)
         self._schedule_main: Callable[[Callable[[], None]], None] | None = None
         self._remote: RemoteServer | None = None
         self._last_firewall_warning: str | None = None

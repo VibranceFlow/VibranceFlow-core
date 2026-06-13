@@ -27,13 +27,46 @@ def default_profiles_path() -> Path:
     return vibrance
 
 
+def _vibranceflow_profiles_path() -> Path:
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        raise OSError("APPDATA environment variable is not set.")
+    return Path(appdata) / "VibranceFlow" / "profiles.json"
+
+
+def _is_legacy_luminasync_path(path: Path) -> bool:
+    parts = {p.lower() for p in path.parts}
+    return "luminasync" in parts and "vibranceflow" not in parts
+
+
 class ProfileManager:
     def __init__(self, path: Path | None = None) -> None:
         self._path = path or default_profiles_path()
         self._profiles: dict[str, ColorProfile] = {}
         self._settings = AppSettings()
         self._file_mtime: float = 0.0
+        self._maybe_migrate_legacy_path()
         self._load()
+
+    def _maybe_migrate_legacy_path(self) -> None:
+        if not _is_legacy_luminasync_path(self._path):
+            return
+        target = _vibranceflow_profiles_path()
+        if target.exists():
+            logger.info(
+                "Using %s (legacy LuminaSync file also present at %s)",
+                target,
+                self._path,
+            )
+            self._path = target
+            return
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(self._path.read_bytes())
+            logger.info("Migrated profiles from %s to %s", self._path, target)
+            self._path = target
+        except OSError as e:
+            logger.warning("Could not migrate profiles to %s: %s", target, e)
 
     @property
     def path(self) -> Path:

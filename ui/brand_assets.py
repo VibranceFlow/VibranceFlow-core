@@ -12,7 +12,7 @@ _PNG_DIR = _LOGOS / "PNG"
 
 
 def ico_path() -> Path | None:
-    for name in ("VibranceFlow.ico", "LuminaSync.ico", "luminasync.ico", "icon.ico"):
+    for name in ("VibranceFlow.ico", "icon.ico"):
         p = _ICO_DIR / name
         if p.is_file():
             return p
@@ -24,7 +24,7 @@ def ico_path() -> Path | None:
 
 
 def header_png_path() -> Path | None:
-    for name in ("VibranceFlow.png", "LuminaSync.png", "logo.png", "icon.png"):
+    for name in ("VibranceFlow.png", "logo.png", "icon.png"):
         p = _PNG_DIR / name
         if p.is_file():
             return p

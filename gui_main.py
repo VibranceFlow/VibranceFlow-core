@@ -41,7 +41,7 @@ def _configure_logging() -> None:
 _configure_logging()
 
 from core.single_instance import acquire_single_instance, show_already_running_message
-from ui.app_context import LuminaAppContext
+from ui.app_context import VibranceFlowAppContext
 from ui.main_window import VibranceFlowWindow
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ def main() -> int:
     start_hidden = "--tray" in sys.argv or "--minimized" in sys.argv
 
     try:
-        ctx = LuminaAppContext()
+        ctx = VibranceFlowAppContext()
     except Exception as e:
         _report_fatal_error("VibranceFlow startup failed", str(e))
         print(f"Failed to start VibranceFlow: {e}", file=sys.stderr)
