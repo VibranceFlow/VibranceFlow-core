@@ -42,7 +42,7 @@ Submit the **same** release binary (matching published SHA256) to each vendor th
 
 ### Microsoft Defender / SmartScreen
 
-- Portal: [Microsoft Security Intelligence — file submission](https://www.microsoft.com/en-us/wdsi/filesubmission)
+- Portal: [Microsoft Security Intelligence - file submission](https://www.microsoft.com/en-us/wdsi/filesubmission)
 - Category: **Software developer**
 - Classification: **Incorrectly detected as malware** / false positive
 - Include:
@@ -85,7 +85,7 @@ When budget allows:
 
 1. Purchase **OV** or **EV** code-signing certificate (EV preferred for immediate SmartScreen trust).
 2. Sign every release with `signtool` + timestamp server in CI.
-3. Re-submit one signed sample to Microsoft — whitelisting often applies to the **certificate publisher**, helping future signed builds.
+3. Re-submit one signed sample to Microsoft - whitelisting often applies to the **certificate publisher**, helping future signed builds.
 4. Optional: Microsoft Store / MSIX channel.
 
 Self-signed certificates only trust on machines where the cert was manually installed; they do **not** create public AV whitelist entries for end users.

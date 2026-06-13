@@ -1,4 +1,4 @@
-"""System tray — pystray."""
+"""System tray - pystray."""
 
 from __future__ import annotations
 

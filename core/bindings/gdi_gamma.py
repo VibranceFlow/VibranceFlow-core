@@ -1,4 +1,4 @@
-"""GDI32 gamma ramp — brightness, contrast, and gamma (desktop)."""
+"""GDI32 gamma ramp - brightness, contrast, and gamma (desktop)."""
 
 from __future__ import annotations
 
@@ -126,7 +126,7 @@ def calculate_lut_channel(
     contrast: float = 0.5,
     gamma: float = 1.0,
 ) -> list[int]:
-    """256-point LUT — NVIDIA panel algorithm (NvAPIWrapper #20)."""
+    """256-point LUT - NVIDIA panel algorithm (NvAPIWrapper #20)."""
     data_points = 256
     gamma = max(0.4, min(2.8, gamma))
     contrast = (max(0.0, min(1.0, contrast)) - 0.5) * 2.0

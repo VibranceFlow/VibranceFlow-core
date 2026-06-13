@@ -51,7 +51,7 @@ poetry run python scripts/test_fernet_cmds.py
 ```
 
 - Pair Mobile starts the server via `prepare_pairing_session()`; firewall UAC is optional (**Allow in Firewall** in the dialog).
-- Do not run the full app as administrator for remote testing — only the firewall helper may request elevation.
+- Do not run the full app as administrator for remote testing - only the firewall helper may request elevation.
 - Frozen builds log to `%APPDATA%\VibranceFlow\app.log` (override with `VIBRANCEFLOW_LOG`).
 - **Mobile APK compatibility:** core changes that keep LAN protocol **v1** (port 8765, Fernet wire, commands) do not require a new APK. See [VibranceFlow-mobile/docs/CORE_APK_COMPATIBILITY.md](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
 
@@ -62,7 +62,7 @@ poetry run python scripts/test_fernet_cmds.py
 | `core/` | Engine, profiles, foreground window monitor |
 | `core/bindings/` | GDI32 / NVAPI via ctypes |
 | `core/remote/` | LAN WebSocket server, Fernet, PIN/QR pairing, firewall helper |
-| `core/single_instance.py` | Windows mutex — one GUI instance |
+| `core/single_instance.py` | Windows mutex - one GUI instance |
 | `ui/` | CustomTkinter GUI, tray, process picker, Pair Mobile dialog |
 | `ui/window_chrome.py` | Non-maximizable windowed mode |
 | `ui/layout.py` | Screen-aware window / pairing dialog sizing |
@@ -77,7 +77,7 @@ Architecture write-ups, PoC scripts, and platform experiments are maintained in 
 
 - Windows `.exe`: `poetry install --with packaging` then `.\packaging\build_windows.ps1`
 - **Brand icons:** commit `ui/Logos/PNG/app_logo.png` and `ui/Logos/ICO/app_logo.ico` (GUI + Nuitka). Loader: `ui/brand_assets.py`.
-- Optional placeholders only: `poetry run python scripts/generate_brand_assets.py` (writes `logo.png` / `logo.ico` — do not use as primary)
+- Optional placeholders only: `poetry run python scripts/generate_brand_assets.py` (writes `logo.png` / `logo.ico` - do not use as primary)
 - CI build: `.github/workflows/build-windows.yml`
 - Public release: push tag `vX.Y.Z` or run `.github/workflows/release-windows.yml`
 - False positives (unsigned builds): [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md)

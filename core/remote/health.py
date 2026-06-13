@@ -1,4 +1,4 @@
-"""Remote server health checks — portable across OS."""
+"""Remote server health checks - portable across OS."""
 
 from __future__ import annotations
 

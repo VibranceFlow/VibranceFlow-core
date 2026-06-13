@@ -21,7 +21,7 @@ Wire encoding: JSON → Fernet → inner base64url (with `=` padding) → outer 
 ## Pairing
 
 1. **PIN (primary):** phone sends plaintext `{"v":1,"cmd":"pair","pin":"######"}` → PC responds once with plaintext `{"ok":true,"host","port","key"}`.
-2. **QR (alternative):** JSON `{v, host, port, key}` scanned or pasted — no PIN step.
+2. **QR (alternative):** JSON `{v, host, port, key}` scanned or pasted - no PIN step.
 
 After pairing, all frames are Fernet-encrypted. Re-pair after **New code** on PC or LAN IP change.
 

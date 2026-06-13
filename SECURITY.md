@@ -1,4 +1,4 @@
-# Security — VibranceFlow Core
+# Security - VibranceFlow Core
 
 VibranceFlow Core is a **local Windows desktop app** with optional **LAN mobile control**. It does not use accounts, cloud backends, or analytics.
 
@@ -10,7 +10,7 @@ VibranceFlow Core is a **local Windows desktop app** with optional **LAN mobile 
 | Brute-force pairing PIN | 6-digit PIN, TTL ~15 minutes, attempt limit with lockout; `compare_digest` for PIN check |
 | Oversized or malformed remote commands | Command whitelist, JSON size limits, WebSocket frame limits, rate limiting on server |
 | Inbound LAN traffic blocked by Windows Firewall | Optional one-time UAC prompt adds TCP **8765** on **private** profile only |
-| Data sent to VibranceFlow servers | **None** — no internet API calls in normal runtime (LAN only) |
+| Data sent to VibranceFlow servers | **None** - no internet API calls in normal runtime (LAN only) |
 
 This is **local zero-trust**: the LAN is untrusted; only holders of the pairing key can issue valid commands after pairing completes.
 
@@ -28,8 +28,8 @@ After pairing, all commands use Fernet payload encryption. Transport is **not** 
 | ---- | ------- | ----- | ------- |
 | Fernet `key` (session) | Yes (runtime) | In-memory on PC; shown in Pair Mobile UI | Encrypt/decrypt remote commands |
 | Color profiles | Yes | `%APPDATA%\VibranceFlow\profiles.json` | Per-game display settings |
-| User account / email | No | — | — |
-| Crash / analytics telemetry | No | — | Not included in v1 |
+| User account / email | No | - | - |
+| Crash / analytics telemetry | No | - | Not included in v1 |
 
 Logs (`%APPDATA%\VibranceFlow\app.log` in frozen builds) may include LAN peer IPs and executable names for troubleshooting. PIN and Fernet keys are **not** logged.
 
@@ -51,4 +51,4 @@ Open a GitHub issue on [VibranceFlow-core](https://github.com/VibranceFlow/Vibra
 
 Error handling reference: [docs/ERROR_HANDLING.md](docs/ERROR_HANDLING.md).
 
-For release integrity and antivirus false positives, see [README — Security](README.md) and [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md).
+For release integrity and antivirus false positives, see [README - Security](README.md) and [docs/FALSE_POSITIVE_RUNBOOK.md](docs/FALSE_POSITIVE_RUNBOOK.md).

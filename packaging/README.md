@@ -19,7 +19,7 @@
 
 False-positive process: [docs/FALSE_POSITIVE_RUNBOOK.md](../docs/FALSE_POSITIVE_RUNBOOK.md).
 
-## Linux (AppImage — future engine port)
+## Linux (AppImage - future engine port)
 
 1. Build on Linux with the same Nuitka flow when a Linux display backend exists.
 2. Layout `VibranceFlow.AppDir` with `AppRun`, `.desktop`, icon, and binary.

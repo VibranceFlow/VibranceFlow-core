@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Simulate mobile PIN pairing (plaintext WS) — same as pairClient.ts."""
+"""Simulate mobile PIN pairing (plaintext WS) - same as pairClient.ts."""
 
 from __future__ import annotations
 

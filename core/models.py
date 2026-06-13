@@ -104,7 +104,7 @@ class ColorProfile:
 
 @dataclass
 class DesktopBaseline:
-    """State captured at startup — used by restore_defaults()."""
+    """State captured at startup - used by restore_defaults()."""
 
     gamma_ramp: GAMMARAMP
     vibrance_level: int

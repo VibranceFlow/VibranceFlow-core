@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""VibranceFlow — graphical user interface entry point."""
+"""VibranceFlow - graphical user interface entry point."""
 
 from __future__ import annotations
 

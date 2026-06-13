@@ -1,4 +1,4 @@
-# Error handling — VibranceFlow Core
+# Error handling - VibranceFlow Core
 
 How the desktop app surfaces failures for LAN remote, profiles, and display.
 
@@ -7,10 +7,10 @@ How the desktop app surfaces failures for LAN remote, profiles, and display.
 | Situation | Wire response | Logs | UI |
 | --------- | ------------- | ---- | -- |
 | Decrypt fail (wrong key) | Encrypted `ok:false`, `error:"unauthorized"` | WARNING with frame length | Mobile must re-pair |
-| Invalid command JSON | `ok:false`, `error` + optional `error_code` | — | — |
-| Handler exception | `ok:false`, `error:"internal error"`, `error_code:"internal_error"` | `logger.exception` | — |
-| Profile save failed | `ok:false`, `error:"profile save failed"`, `error_code:"profile_save_failed"` | ERROR | — |
-| Main-thread dispatch timeout | `ok:false`, `error:"timeout"` | — | Mobile command timeout |
+| Invalid command JSON | `ok:false`, `error` + optional `error_code` | - | - |
+| Handler exception | `ok:false`, `error:"internal error"`, `error_code:"internal_error"` | `logger.exception` | - |
+| Profile save failed | `ok:false`, `error:"profile save failed"`, `error_code:"profile_save_failed"` | ERROR | - |
+| Main-thread dispatch timeout | `ok:false`, `error:"timeout"` | - | Mobile command timeout |
 | Port stop | Encrypted `event:"port_closed"` then close | INFO | Mobile waiting + reconnect |
 | PIN wrong / expired | Plaintext `error:"invalid or expired code"` | WARNING with peer IP | Pair Mobile dialog |
 | PIN lockout | Plaintext `error:"too_many_attempts"` | WARNING lockout + peer | Mobile: wait ~60s |
@@ -39,7 +39,7 @@ Mobile may use this for troubleshooting; fields are optional in v1.
 ## Display / profiles
 
 - **NVAPI unavailable**: GDI-only; vibrance/hue skipped with debug log.
-- **`apply_profile`**: each step (gamma, vibrance, hue) isolated — one failure does not block the others; errors logged at ERROR.
+- **`apply_profile`**: each step (gamma, vibrance, hue) isolated - one failure does not block the others; errors logged at ERROR.
 - **`ProfileManager.save()`**: raises `ProfileSaveError` on disk/permission errors (not silent).
 
 ## Public API fix

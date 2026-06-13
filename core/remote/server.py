@@ -90,7 +90,7 @@ class RemoteServer:
         with self._lock:
             self._key = generate_key()
             self._pin.regenerate()
-        logger.info("Pairing key rotated — connected phones must re-pair")
+        logger.info("Pairing key rotated - connected phones must re-pair")
         self._disconnect_all_clients()
 
     def disconnect_all_clients(self) -> None:
@@ -269,7 +269,7 @@ class RemoteServer:
             if not self._pin.verify(pin):
                 err = self._pin.pair_error_after_fail()
                 if err == "too_many_attempts":
-                    logger.warning("Pair PIN lockout — rejected attempt from %s", peer)
+                    logger.warning("Pair PIN lockout - rejected attempt from %s", peer)
                 else:
                     logger.warning("Pair PIN rejected from %s", peer)
                 return build_pair_response(ok=False, error=err)
@@ -292,7 +292,7 @@ class RemoteServer:
             plaintext = decrypt_json(key, text)
         except ValueError:
             logger.warning(
-                "Rejected remote frame (decrypt failed, len=%s) — phone key may be stale after New code",
+                "Rejected remote frame (decrypt failed, len=%s) - phone key may be stale after New code",
                 len(text),
             )
             return encrypt_json(key, '{"v":1,"ok":false,"error":"unauthorized"}')
