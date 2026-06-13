@@ -24,6 +24,7 @@ scripts/*
 !scripts/test_prepare_pairing.py
 !scripts/test_fernet_cmds.py
 !scripts/verify_protocol_v1.py
+!scripts/test_disconnect_clients.py
 !scripts/generate_brand_assets.py
 pairing.json
 .cursor/

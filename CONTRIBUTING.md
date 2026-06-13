@@ -31,6 +31,7 @@ poetry run python scripts/diagnose_lan_remote.py
 
 poetry run python scripts/test_remote_boot.py
 poetry run python scripts/test_prepare_pairing.py
+poetry run python scripts/test_disconnect_clients.py
 poetry run python scripts/verify_protocol_v1.py
 
 # PIN like the Android app (use code from Pair Mobile):

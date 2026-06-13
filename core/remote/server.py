@@ -93,6 +93,10 @@ class RemoteServer:
         logger.info("Pairing key rotated — connected phones must re-pair")
         self._disconnect_all_clients()
 
+    def disconnect_all_clients(self) -> None:
+        """Close all connected WebSocket clients without stopping the server."""
+        self._disconnect_all_clients()
+
     def start(self) -> None:
         if self.is_running:
             if self.is_listening:
@@ -130,12 +134,12 @@ class RemoteServer:
                 for ws in list(self._clients):
                     try:
                         await ws.send(notice)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Could not send port_closed to client: %s", e)
                     try:
                         await ws.close()
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Could not close client socket: %s", e)
                 self._clients.clear()
                 if self._server is not None:
                     self._server.close()
@@ -167,8 +171,8 @@ class RemoteServer:
 
         try:
             asyncio.run_coroutine_threadsafe(_close(), self._loop).result(timeout=3)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Could not disconnect remote clients: %s", e)
 
     def _run_loop(self) -> None:
         self._loop = asyncio.new_event_loop()
@@ -225,11 +229,13 @@ class RemoteServer:
                             await websocket.close(1009, "message too large")
                             break
 
-                    reply = await self._process_message(text)
+                    reply = await self._process_message(text, peer=peer)
                     if reply is not None:
                         await websocket.send(reply)
+            except websockets.exceptions.ConnectionClosed:
+                logger.info("Remote client disconnected from %s", peer)
             except Exception:
-                logger.debug("client disconnected", exc_info=True)
+                logger.warning("Remote client session error from %s", peer, exc_info=True)
             finally:
                 self._clients.discard(websocket)
 
@@ -254,14 +260,19 @@ class RemoteServer:
         self._listening.set()
         await self._server.wait_closed()
 
-    def _try_pair_with_pin(self, wire: str) -> str | None:
+    def _try_pair_with_pin(self, wire: str, *, peer: Any = None) -> str | None:
         req = parse_pair_request(wire)
         if req is None:
             return None
         pin = str(req.get("pin", ""))
         with self._lock:
             if not self._pin.verify(pin):
-                return build_pair_response(ok=False, error="invalid or expired code")
+                err = self._pin.pair_error_after_fail()
+                if err == "too_many_attempts":
+                    logger.warning("Pair PIN lockout — rejected attempt from %s", peer)
+                else:
+                    logger.warning("Pair PIN rejected from %s", peer)
+                return build_pair_response(ok=False, error=err)
             key = self._key
             host = self._host
             port = self._port
@@ -270,9 +281,9 @@ class RemoteServer:
             self._on_paired()
         return build_pair_response(ok=True, host=host, port=port, key=key)
 
-    async def _process_message(self, wire: str) -> str | None:
+    async def _process_message(self, wire: str, *, peer: Any = None) -> str | None:
         text = wire.strip()
-        pair_reply = self._try_pair_with_pin(text)
+        pair_reply = self._try_pair_with_pin(text, peer=peer)
         if pair_reply is not None:
             return pair_reply
 

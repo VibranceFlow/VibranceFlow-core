@@ -697,7 +697,8 @@ class VibranceFlowWindow(ctk.CTk):
         if self._ctx.remote_is_listening:
             remote = " · remote on"
         elif self._ctx.profiles.settings.keep_remote_port_open:
-            remote = " · remote error"
+            detail = self._ctx.remote_last_error
+            remote = f" · remote error ({detail})" if detail else " · remote error"
         else:
             remote = ""
         self._status_label.configure(text=f"{focus} · {n} profile(s){remote}")

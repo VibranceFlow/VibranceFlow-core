@@ -46,3 +46,5 @@ Cross-repo Fernet: `scripts/test_fernet_cmds.py` with mobile `scripts/test-ferne
 ## Security notes
 
 See [SECURITY.md](../SECURITY.md) for threat model, pairing cleartext window, and firewall behavior.
+
+Operational error matrix: [ERROR_HANDLING.md](ERROR_HANDLING.md).

@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 PROFILE_VERSION = 2
 
 
+class ProfileSaveError(OSError):
+    """Raised when profiles.json cannot be written."""
+
+
 def default_profiles_path() -> Path:
     appdata = os.environ.get("APPDATA")
     if not appdata:
@@ -100,18 +104,22 @@ class ProfileManager:
                     logger.warning("Invalid profile for %s: %s", exe, e)
 
     def save(self) -> None:
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {
-            "version": PROFILE_VERSION,
-            "settings": self._settings.to_dict(),
-            "profiles": {exe: p.to_storage_dict() for exe, p in self._profiles.items()},
-        }
-        self._path.write_text(
-            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-        if self._path.exists():
-            self._file_mtime = self._path.stat().st_mtime
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            payload = {
+                "version": PROFILE_VERSION,
+                "settings": self._settings.to_dict(),
+                "profiles": {exe: p.to_storage_dict() for exe, p in self._profiles.items()},
+            }
+            self._path.write_text(
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            if self._path.exists():
+                self._file_mtime = self._path.stat().st_mtime
+        except OSError as e:
+            logger.error("Failed to save profiles to %s: %s", self._path, e)
+            raise ProfileSaveError(str(e)) from e
 
     def reload_if_stale(self) -> bool:
         """Reload profiles.json when another writer (or remote) changed it on disk."""

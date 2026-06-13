@@ -331,7 +331,15 @@ class PairingDialog(ctk.CTkToplevel):
             parent=self,
         ):
             return
-        self._ctx.regenerate_pairing_key()
+        try:
+            self._ctx.regenerate_pairing_key()
+        except Exception as e:
+            messagebox.showerror(
+                "New code",
+                f"Could not rotate the pairing key:\n{e}",
+                parent=self,
+            )
+            return
         server = self._ctx.ensure_remote_server()
         pin = server.pairing_pin
         pin_display = f"{pin[:3]} {pin[3:]}" if len(pin) == 6 else pin
