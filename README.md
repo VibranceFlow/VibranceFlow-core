@@ -5,11 +5,11 @@
 
 VibranceFlow Core is the Windows desktop app for game-based color profiles and local mobile pairing.
 
-## Release 1.0 scope
+## Release 1.1 scope
 
 - Supported desktop platform: **Windows 11**
-- Public build format: **single-file `.exe`**
-- Mobile companion for this release: **Android APK** (from `VibranceFlow-mobile`)
+- Public build format: **single-file `.exe`** (~22 MB, Nuitka LTO)
+- Mobile companion: **Android APK** (5 builds per release - see [VibranceFlow-mobile](https://github.com/VibranceFlow/VibranceFlow-mobile/releases))
 
 ## Who is this for? (Use Cases)
 
@@ -22,17 +22,19 @@ VibranceFlow is fully standalone on Windows. The optional mobile companion acts 
 
 ### App Preview
 
-![VibranceFlow Main Window](docs/images/vibranceflow-windows-core-main.png)  
-![VibranceFlow Pair Mobile](docs/images/vibranceflow-windows-pair-mobile.png)
+<p align="center">
+  <img src="docs/images/vibranceflow-windows-core-main.png" width="400" alt="VibranceFlow Main Window" />
+  <img src="docs/images/vibranceflow-windows-pair-mobile.png" width="400" alt="VibranceFlow Pair Mobile" />
+</p>
 
 ## Download and install (Windows)
 
 Official downloads live on GitHub Releases:
 
-| Build | Releases page |
-| --- | --- |
-| **Windows** (`VibranceFlow.exe`) | [github.com/VibranceFlow/VibranceFlow-core/releases](https://github.com/VibranceFlow/VibranceFlow-core/releases) |
-| **Android APK** (`vibranceflow-release.apk`) | [github.com/VibranceFlow/VibranceFlow-mobile/releases](https://github.com/VibranceFlow/VibranceFlow-mobile/releases) |
+| Build | Latest (v1.1.0) | All releases |
+| --- | --- | --- |
+| **Windows** (`VibranceFlow.exe`) | [Download](https://github.com/VibranceFlow/VibranceFlow-core/releases/download/V1.1.0/VibranceFlow.exe) · [SHA-256](https://github.com/VibranceFlow/VibranceFlow-core/releases/download/V1.1.0/VibranceFlow.exe.sha256) | [Releases](https://github.com/VibranceFlow/VibranceFlow-core/releases) |
+| **Android** (`vibranceflow-universal-release.apk`) | [Download](https://github.com/VibranceFlow/VibranceFlow-mobile/releases/download/V1.1.0/vibranceflow-universal-release.apk) · [SHA-256](https://github.com/VibranceFlow/VibranceFlow-mobile/releases/download/V1.1.0/vibranceflow-universal-release.apk.sha256) | [Releases](https://github.com/VibranceFlow/VibranceFlow-mobile/releases) |
 
 Steps on Windows:
 
@@ -90,10 +92,10 @@ This project follows a strict transparency model:
 - zero analytics and zero telemetry
 - every release publishes `VibranceFlow.exe.sha256` for integrity verification
 
-Transparency — VirusTotal reports (for binaries built from CI for the releases above):
+Transparency - VirusTotal reports (v1.1.0, CI-built artifacts):
 
-- **Windows** (`VibranceFlow.exe`): [VirusTotal](https://www.virustotal.com/gui/file/9ad23e5a5d2555c60e3d8461a95c34fe02b8760b6d3d9fd60fb354bea3d7f301)
-- **Android** (`vibranceflow-release.apk`): [VirusTotal](https://www.virustotal.com/gui/file/8418c3cde2d31a0a63a6c3e96488e57ee47f89e2833051e336440745f2c2bd49)
+- **Windows** (`VibranceFlow.exe`): [VirusTotal](https://www.virustotal.com/gui/file/de47071336775b4b8486b02e35be3b6583701d3a31a2f04d29cdc9fe2e95a960?nocache=1) · SHA-256 `de47071336775b4b8486b02e35be3b6583701d3a31a2f04d29cdc9fe2e95a960`
+- **Android** (5 APKs + checksum sidecars): see [VibranceFlow-mobile Releases](https://github.com/VibranceFlow/VibranceFlow-mobile/releases/tag/V1.1.0) and [mobile README](https://github.com/VibranceFlow/VibranceFlow-mobile#-security-false-positives--transparency)
 
 Before trusting any downloaded executable, always verify integrity:
 
@@ -141,7 +143,7 @@ Until then, the focus remains: open-source, free access, transparent security pr
 
 ## Mobile companion (protocol v1)
 
-Core releases on **protocol v1** (port `8765`, Fernet wire) stay compatible with an existing **VibranceFlow-mobile** APK 1.0.x that includes LAN cleartext. You do **not** need a new APK for core-only GUI, engine, firewall, or packaging updates.
+Core releases on **protocol v1** (port `8765`, Fernet wire) stay compatible with **VibranceFlow-mobile** APK **1.1.x** (or any 1.x build with LAN cleartext). You do **not** need a new APK for core-only GUI, engine, firewall, or packaging updates.
 
 Coordinate a **new APK** only when bumping wire `"v"`, port, Fernet format, or mobile pairing code. Full matrix: [VibranceFlow-mobile/docs/CORE_APK_COMPATIBILITY.md](https://github.com/VibranceFlow/VibranceFlow-mobile/blob/main/docs/CORE_APK_COMPATIBILITY.md).
 

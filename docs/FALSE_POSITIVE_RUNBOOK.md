@@ -8,7 +8,7 @@ Commercial code signing (OV/EV) and store publishing are planned for a later pha
 
 1. Prefer CI builds:
    - Continuous: [`.github/workflows/build-windows.yml`](../.github/workflows/build-windows.yml)
-   - Public release: [`.github/workflows/release-windows.yml`](../.github/workflows/release-windows.yml) (tag `v*`, for example `v1.0.1`)
+   - Public release: [`.github/workflows/release-windows.yml`](../.github/workflows/release-windows.yml) (tag `v*`, for example `v1.1.0`)
 2. Confirm both artifacts ship together:
    - `VibranceFlow.exe`
    - `VibranceFlow.exe.sha256`
