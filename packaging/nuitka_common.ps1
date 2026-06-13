@@ -14,9 +14,16 @@ $script:NuitkaCommonArgs = @(
 )
 
 function Get-NuitkaIconArg {
-    $ico = Get-ChildItem -Path "ui\Logos\ICO\*.ico" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($ico) {
-        return @("--windows-icon-from-ico=$($ico.FullName)")
+    $icoDir = Join-Path $Root "ui\Logos\ICO"
+    foreach ($name in @("app_logo.ico", "logo.ico")) {
+        $ico = Join-Path $icoDir $name
+        if (Test-Path $ico) {
+            return @("--windows-icon-from-ico=$ico")
+        }
+    }
+    $fallback = Get-ChildItem -Path $icoDir -Filter "*.ico" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($fallback) {
+        return @("--windows-icon-from-ico=$($fallback.FullName)")
     }
     return @()
 }
